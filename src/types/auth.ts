@@ -1,7 +1,7 @@
 import { User } from "./user";
 
 export interface SignInDto {
-  email: string;
+  username: string;
   password: string;
 }
 
