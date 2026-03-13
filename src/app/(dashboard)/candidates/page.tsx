@@ -1,17 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckCircle, Clock, Users, UserCheck } from "lucide-react";
+import { CheckCircle, Clock, ListFilter, Users, UserCheck } from "lucide-react";
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DataTable, Pagination } from "@/components/shared";
 import { createCandidateColumns } from "@/config/columns/candidate";
 import { useWorkflowStore } from "@/store/core";
 import { paginate } from "@/lib";
 
+type CandidateFilter = "all" | "active" | "pending" | "hired";
+
 const initialValues = { page: 0, pageSize: 10 };
 
 const Page = () => {
   const { candidates, workflows } = useWorkflowStore();
+  const [statusFilter, setStatusFilter] = useState<CandidateFilter>("all");
   const [pagination, setPagination] = useState(initialValues);
   const { page, pageSize } = pagination;
 
@@ -54,9 +58,22 @@ const Page = () => {
     ];
   }, [candidates]);
 
+  const filteredCandidates = useMemo(() => {
+    switch (statusFilter) {
+      case "active":
+        return candidates.filter((c) => c.currentStageId !== "hired" && c.currentStageId !== "rejected");
+      case "pending":
+        return candidates.filter((c) => c.approvalStatus === "pending");
+      case "hired":
+        return candidates.filter((c) => c.currentStageId === "hired");
+      default:
+        return candidates;
+    }
+  }, [candidates, statusFilter]);
+
   const paginated = useMemo(
-    () => paginate(candidates, page, pageSize, candidates.length),
-    [candidates, page, pageSize],
+    () => paginate(filteredCandidates, page, pageSize, filteredCandidates.length),
+    [filteredCandidates, page, pageSize],
   );
 
   return (
@@ -80,13 +97,33 @@ const Page = () => {
       </div>
 
       <div className="w-full space-y-4">
+        <div className="flex items-center gap-x-2">
+          <ListFilter className="size-4 text-gray-500" />
+          <Select
+            value={statusFilter}
+            onValueChange={(v) => {
+              setStatusFilter(v as CandidateFilter);
+              setPagination((p) => ({ ...p, page: 0 }));
+            }}
+          >
+            <SelectTrigger className="w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Candidates</SelectItem>
+              <SelectItem value="active">Active in Pipeline</SelectItem>
+              <SelectItem value="pending">Pending Approval</SelectItem>
+              <SelectItem value="hired">Hired</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <DataTable columns={columns} data={paginated} />
         <Pagination
           onPageChange={(p) => setPagination({ ...pagination, page: p })}
           onPageSizeChange={(ps) => setPagination({ ...pagination, pageSize: ps })}
           page={page}
           pageSize={pageSize}
-          total={candidates.length}
+          total={filteredCandidates.length}
         />
       </div>
     </div>

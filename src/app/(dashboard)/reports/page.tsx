@@ -1,8 +1,8 @@
 "use client";
 
-import { Briefcase, FileDown, Printer, TrendingUp, UserCheck, Users, UsersRound } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
-import { format, isWithinInterval, subDays } from "date-fns";
+import { Briefcase, CalendarDays, FileDown, Printer, TrendingUp, UserCheck, Users, UsersRound } from "lucide-react";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
+import { format, isWithinInterval, startOfWeek, subDays } from "date-fns";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 
@@ -57,7 +57,18 @@ const PIPELINE_STAGES = [
   { label: "Hired", stageIds: ["hired", "onboarding"] },
 ];
 
-const CHART_COLORS = ["#6366f1", "#f59e0b", "#10b981", "#ef4444", "#3b82f6", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316", "#06b6d4"];
+const CHART_COLORS = [
+  "#6366f1",
+  "#f59e0b",
+  "#10b981",
+  "#ef4444",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#14b8a6",
+  "#f97316",
+  "#06b6d4",
+];
 const CANDIDATE_SOURCES = ["LinkedIn", "Referral", "Job Board", "Company Website", "Recruiter", "Career Fair"];
 
 const pipelineConfig: ChartConfig = {
@@ -70,6 +81,10 @@ const conversionConfig: ChartConfig = {
 
 const hiringByDeptConfig: ChartConfig = {
   hired: { label: "Hired", color: "#8b5cf6" },
+};
+
+const applicationsOverTimeConfig: ChartConfig = {
+  applications: { label: "Applications", color: "#3b82f6" },
 };
 
 const sourceChartConfig: ChartConfig = Object.fromEntries(
@@ -157,6 +172,27 @@ const Page = () => {
       })).filter((d) => d.value > 0),
     [filteredCandidates],
   );
+
+  const applicationsOverTime = useMemo(() => {
+    const weekMap = new Map<string, number>();
+    for (const c of filteredCandidates) {
+      const week = startOfWeek(new Date(c.appliedAt), { weekStartsOn: 1 });
+      const key = format(week, "MMM d");
+      weekMap.set(key, (weekMap.get(key) ?? 0) + 1);
+    }
+
+    return Array.from(weekMap.entries())
+      .map(([week, applications]) => ({ week, applications }))
+      .sort((a, b) => {
+        // Sort chronologically by parsing the week labels back
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const [aM, aD] = a.week.split(" ");
+        const [bM, bD] = b.week.split(" ");
+        const aIdx = months.indexOf(aM) * 100 + Number(aD);
+        const bIdx = months.indexOf(bM) * 100 + Number(bD);
+        return aIdx - bIdx;
+      });
+  }, [filteredCandidates]);
 
   const totalCandidates = filteredCandidates.length;
   const hiredCount = pipelineData.find((p) => p.stage === "Hired")?.count ?? 0;
@@ -375,6 +411,45 @@ const Page = () => {
               <p className="mt-1 text-xs text-gray-400">{stat.subtitle}</p>
             </div>
           ))}
+        </div>
+        <div className="space-y-4 rounded-xl border p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold">Applications Over Time</h3>
+              <p className="text-xs text-gray-500">Weekly application volume trends</p>
+            </div>
+            <CalendarDays className="size-5 text-gray-400" />
+          </div>
+          {applicationsOverTime.length > 1 ? (
+            <ChartContainer config={applicationsOverTimeConfig} className="h-64 w-full">
+              <AreaChart data={applicationsOverTime} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="fillApplications" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--color-applications)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--color-applications)" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="week" tickLine={false} axisLine={false} tickMargin={8} />
+                <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Area
+                  type="monotone"
+                  dataKey="applications"
+                  stroke="var(--color-applications)"
+                  strokeWidth={2}
+                  fill="url(#fillApplications)"
+                />
+              </AreaChart>
+            </ChartContainer>
+          ) : (
+            <div className="grid h-64 place-items-center rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600">
+              <div className="text-center">
+                <CalendarDays className="mx-auto size-8 text-gray-300 dark:text-gray-600" />
+                <p className="mt-2 text-sm text-gray-400">Not enough data for trend chart</p>
+              </div>
+            </div>
+          )}
         </div>
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-4 rounded-xl border p-4">

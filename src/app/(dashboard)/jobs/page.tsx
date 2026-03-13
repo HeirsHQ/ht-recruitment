@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Briefcase, CheckCircle, FileText, XCircle } from "lucide-react";
+import { Briefcase, CheckCircle, FileText, ListFilter, XCircle } from "lucide-react";
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DataTable, Pagination } from "@/components/shared";
 import { CreateJob } from "@/components/jobs/create-job";
 import { columns } from "@/config/columns/job";
-import type { Job } from "@/types/job";
+import type { Job, JobStatus } from "@/types/job";
 import { paginate } from "@/lib";
 
 import { MOCK_JOBS } from "@/__mock__/database";
@@ -14,6 +15,7 @@ import { MOCK_JOBS } from "@/__mock__/database";
 const initialValues = { page: 0, pageSize: 10 };
 
 const Page = () => {
+  const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
   const [jobs, setJobs] = useState<Job[]>(MOCK_JOBS);
   const [pagination, setPagination] = useState(initialValues);
   const { page, pageSize } = pagination;
@@ -55,7 +57,15 @@ const Page = () => {
     ];
   }, [jobs]);
 
-  const paginated = useMemo(() => paginate(jobs, page, pageSize, jobs.length), [jobs, page, pageSize]);
+  const filteredJobs = useMemo(
+    () => (statusFilter === "all" ? jobs : jobs.filter((j) => j.status === statusFilter)),
+    [jobs, statusFilter],
+  );
+
+  const paginated = useMemo(
+    () => paginate(filteredJobs, page, pageSize, filteredJobs.length),
+    [filteredJobs, page, pageSize],
+  );
 
   return (
     <div className="space-y-6 p-6">
@@ -79,13 +89,32 @@ const Page = () => {
         ))}
       </div>
       <div className="w-full space-y-4">
+        <div className="flex items-center gap-x-2">
+          <ListFilter className="size-4 text-gray-500" />
+          <Select
+            value={statusFilter}
+            onValueChange={(v) => {
+              setStatusFilter(v as JobStatus | "all");
+              setPagination((p) => ({ ...p, page: 0 }));
+            }}
+          >
+            <SelectTrigger className="w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="open">Open</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <DataTable columns={columns} data={paginated} />
         <Pagination
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
           page={page}
           pageSize={pageSize}
-          total={jobs.length}
+          total={filteredJobs.length}
         />
       </div>
     </div>

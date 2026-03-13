@@ -7,12 +7,37 @@ import { useGlobalStore } from "@/store/core";
 import { Notification } from "@/types";
 import { Input } from "../ui/input";
 import { cn } from "@/lib";
+import { Button } from "../ui/button";
 
 const notifications: Notification[] = [
-  { content: "", createdAt: "", id: "1", isRead: false, title: "" },
-  { content: "", createdAt: "", id: "2", isRead: false, title: "" },
-  { content: "", createdAt: "", id: "3", isRead: false, title: "" },
-  { content: "", createdAt: "", id: "4", isRead: false, title: "" },
+  {
+    content: "Your pipeline for Software Engineer at Transcorp has been reviewed.",
+    createdAt: "2024-05-15T10:30:00Z",
+    id: "1",
+    isRead: false,
+    title: "Application Reviewed",
+  },
+  {
+    content: "Interview scheduled for Product Designer role at Heirs Holding on Friday.",
+    createdAt: "2024-05-15T09:15:00Z",
+    id: "2",
+    isRead: false,
+    title: "Interview Scheduled",
+  },
+  {
+    content: "Savannah Rice has been shortlisted for the Data Analyst position at Heirs Technologies.",
+    createdAt: "2024-05-14T18:45:00Z",
+    id: "3",
+    isRead: true,
+    title: "Shortlisted",
+  },
+  {
+    content: "Interview for Marketing Manager at BrandInc is tomorrow.",
+    createdAt: "2024-05-14T08:00:00Z",
+    id: "4",
+    isRead: false,
+    title: "Interview Reminder",
+  },
 ];
 
 export const Header = () => {
@@ -43,12 +68,23 @@ export const Header = () => {
               )}
             </button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="relative w-60 space-y-6">
+          <PopoverContent align="end" className="relative w-75 space-y-6">
             <div className="flex w-full items-center justify-between">
               <p className="text-sm font-medium">Notifications</p>
-              <div className="absolute top-2 right-2 grid place-items-center rounded-full bg-red-500 text-xs text-white">
-                {notifications.length}
-              </div>
+              <Button size="xs" variant="outline">
+                Mark all as read
+              </Button>
+            </div>
+            <div className="w-full space-y-1">
+              {notifications.map((notification) => (
+                <div className="flex items-center gap-x-2" key={notification.id}>
+                  <div className={`size-2 rounded-full ${notification.isRead ? "bg-gray-300" : "bg-red-500"}`}></div>
+                  <div className="flex flex-col">
+                    <p className="text-sm font-medium">{notification.title}</p>
+                    <p className="max-w-60 truncate text-xs text-gray-500">{notification.content}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </PopoverContent>
         </Popover>

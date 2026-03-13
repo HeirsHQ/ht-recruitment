@@ -3,7 +3,8 @@
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { format, formatDistanceToNow } from "date-fns";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { format, formatDistanceToNow, startOfDay } from "date-fns";
 import { toast } from "sonner";
 import Link from "next/link";
 import {
@@ -13,6 +14,7 @@ import {
   Briefcase,
   Building2,
   Calendar,
+  CalendarDays,
   Clock,
   DollarSign,
   ExternalLink,
@@ -34,6 +36,7 @@ import {
 } from "lucide-react";
 
 import { Kanban, KanbanList, TabPanel, type KanbanColumnConfig, type KanbanDragEndEvent } from "@/components/shared";
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import type { JobApplication, PipelineStageConfig } from "@/types/job";
 import { StageDialog } from "@/components/jobs/stage-dialog";
 import KanbanCard from "@/components/jobs/kanban-card";
@@ -130,6 +133,10 @@ const SOURCE_COLORS: Record<string, string> = {
   "Career Fair": "#3b82f6",
 };
 
+const applicationsChartConfig: ChartConfig = {
+  applications: { label: "Applications", color: "#6366f1" },
+};
+
 const Page = () => {
   const id = useParams().id as string;
   const job = MOCK_JOBS.find((job) => job.id === id);
@@ -178,6 +185,21 @@ const Page = () => {
       const count = Math.max(1, Math.round(total * [0.35, 0.25, 0.15, 0.12, 0.08, 0.05][i]));
       return { name, count, percentage: Math.round((count / Math.max(total, 1)) * 100) };
     });
+  }, [applications]);
+
+  const applicationsOverTime = useMemo(() => {
+    const dayMap = new Map<number, { key: number; label: string; applications: number }>();
+    for (const app of applications) {
+      const day = startOfDay(new Date(app.createdAt));
+      const key = day.getTime();
+      const existing = dayMap.get(key);
+      if (existing) {
+        existing.applications += 1;
+      } else {
+        dayMap.set(key, { key, label: format(day, "MMM d"), applications: 1 });
+      }
+    }
+    return Array.from(dayMap.values()).sort((a, b) => a.key - b.key);
   }, [applications]);
 
   const topCandidates = useMemo(
@@ -497,6 +519,45 @@ const Page = () => {
               <p className="mt-2 text-2xl font-bold">{stats.accepted}</p>
               <p className="mt-1 text-xs text-gray-400">Moved forward</p>
             </div>
+          </div>
+          <div className="space-y-4 rounded-xl border p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold">Applications Over Time</h3>
+                <p className="text-xs text-gray-500">Daily application volume for this job</p>
+              </div>
+              <CalendarDays className="size-5 text-gray-400" />
+            </div>
+            {applicationsOverTime.length > 1 ? (
+              <ChartContainer config={applicationsChartConfig} className="h-64 w-full">
+                <AreaChart data={applicationsOverTime} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="fillJobApplications" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-applications)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--color-applications)" stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area
+                    type="monotone"
+                    dataKey="applications"
+                    stroke="var(--color-applications)"
+                    strokeWidth={2}
+                    fill="url(#fillJobApplications)"
+                  />
+                </AreaChart>
+              </ChartContainer>
+            ) : (
+              <div className="grid h-64 place-items-center rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600">
+                <div className="text-center">
+                  <CalendarDays className="mx-auto size-8 text-gray-300 dark:text-gray-600" />
+                  <p className="mt-2 text-sm text-gray-400">Not enough data for trend chart</p>
+                </div>
+              </div>
+            )}
           </div>
         </TabPanel>
         <TabPanel selected={activeTab} value="activities">

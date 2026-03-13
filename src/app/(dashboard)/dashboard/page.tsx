@@ -156,7 +156,15 @@ const Page = () => {
           <ChartContainer config={candidateSourceConfig} className="h-64 w-full">
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="source" hideLabel />} />
-              <Pie data={candidateSourceData} dataKey="value" nameKey="source" cx="50%" cy="50%" innerRadius={55} outerRadius={90}>
+              <Pie
+                data={candidateSourceData}
+                dataKey="value"
+                nameKey="source"
+                cx="50%"
+                cy="50%"
+                innerRadius={55}
+                outerRadius={90}
+              >
                 {candidateSourceData.map((entry) => (
                   <Cell key={entry.source} fill={entry.fill} />
                 ))}
