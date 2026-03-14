@@ -11,6 +11,7 @@ import { StageListEditor } from "./stage-list-editor";
 import type { PipelineStageConfig } from "@/types/job";
 import type { WorkflowTemplate } from "@/types/workflow";
 
+import { sanitizeText } from "@/lib/sanitize";
 import { MOCK_DEPARTMENTS } from "@/__mock__/database";
 
 interface WorkflowFormProps {
@@ -33,11 +34,16 @@ export function WorkflowForm({ initialData, onSave, onCancel }: WorkflowFormProp
   const handleSave = () => {
     if (!canSave) return;
 
+    const cleanName = sanitizeText(name);
+    const cleanDescription = sanitizeText(description);
+
+    if (!cleanName) return;
+
     const now = new Date();
     const workflow: WorkflowTemplate = {
-      id: initialData?.id ?? name.trim().toLowerCase().replace(/\s+/g, "-") + "-" + Date.now(),
-      name: name.trim(),
-      description: description.trim(),
+      id: initialData?.id ?? cleanName.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now(),
+      name: cleanName,
+      description: cleanDescription,
       department,
       stages,
       isActive,

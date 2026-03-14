@@ -25,7 +25,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib";
+import { cn, sanitizeText } from "@/lib";
 
 import { MOCK_JOBS } from "@/__mock__/database";
 
@@ -91,11 +91,12 @@ const Page = () => {
   };
 
   const handleAddNote = () => {
-    if (!noteInput.trim()) return;
+    const cleanNote = sanitizeText(noteInput);
+    if (!cleanNote) return;
     const note: ReviewNote = {
       id: crypto.randomUUID(),
       author: "You",
-      content: noteInput.trim(),
+      content: cleanNote,
       createdAt: new Date(),
     };
     setNotes((prev) => [note, ...prev]);

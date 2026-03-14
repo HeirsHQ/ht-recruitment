@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { Lock } from "lucide-react";
 
+import { isValidEmail } from "@/lib/sanitize";
 import { OtpInput } from "@/components/shared/otp-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,9 +17,17 @@ const Page = () => {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [emailError, setEmailError] = useState("");
 
   const handleSendCode = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setEmailError("");
+
+    if (!isValidEmail(email)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+
     // TODO: call API to send OTP to email
     setStep("otp");
   };
@@ -54,9 +63,14 @@ const Page = () => {
                 type="email"
                 placeholder="Enter your email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError("");
+                }}
                 required
+                aria-invalid={!!emailError}
               />
+              {emailError && <p className="text-xs text-red-500">{emailError}</p>}
             </div>
             <Button className="w-full" type="submit">
               Send Code

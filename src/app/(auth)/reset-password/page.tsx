@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { Lock } from "lucide-react";
 
+import { validatePassword } from "@/lib/sanitize";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +14,23 @@ const Page = () => {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState<string[]>([]);
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrors([]);
+
+    const validation = validatePassword(password);
+    if (!validation.isValid) {
+      setErrors(validation.errors);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrors(["Passwords do not match"]);
+      return;
+    }
+
     // TODO: call API to reset password
     router.replace("/");
   };
@@ -51,9 +66,21 @@ const Page = () => {
             type="password"
             placeholder="Confirm new password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(e) => {
+              setConfirmPassword(e.target.value);
+              if (errors.length) setErrors([]);
+            }}
             required
           />
+          {errors.length > 0 && (
+            <ul className="space-y-0.5">
+              {errors.map((err) => (
+                <li key={err} className="text-xs text-red-500">
+                  {err}
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="flex items-center gap-x-2">
             <Checkbox />
             <span className="text-xs font-medium">Keep me signed in</span>

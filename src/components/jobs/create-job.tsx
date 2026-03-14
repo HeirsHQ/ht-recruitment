@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { sanitizeText, parsePositiveInt } from "@/lib/sanitize";
 import type { Job } from "@/types/job";
 import { MOCK_DEPARTMENTS, MOCK_JOB_ROLES } from "@/__mock__/database";
 
@@ -73,7 +74,7 @@ export function CreateJob({ onSubmit }: CreateJobProps) {
   };
 
   const handleAddTag = () => {
-    const value = tagInput.trim();
+    const value = sanitizeText(tagInput);
     if (value && !tags.includes(value)) {
       setTags((prev) => [...prev, value]);
       setTagInput("");
@@ -81,7 +82,7 @@ export function CreateJob({ onSubmit }: CreateJobProps) {
   };
 
   const handleAddRequirement = () => {
-    const value = requirementInput.trim();
+    const value = sanitizeText(requirementInput);
     if (value) {
       setRequirements((prev) => [...prev, value]);
       setRequirementInput("");
@@ -89,7 +90,7 @@ export function CreateJob({ onSubmit }: CreateJobProps) {
   };
 
   const handleAddBenefit = () => {
-    const value = benefitInput.trim();
+    const value = sanitizeText(benefitInput);
     if (value) {
       setBenefits((prev) => [...prev, value]);
       setBenefitInput("");
@@ -97,27 +98,36 @@ export function CreateJob({ onSubmit }: CreateJobProps) {
   };
 
   const handleSubmit = () => {
-    if (!title.trim()) return;
+    const cleanTitle = sanitizeText(title);
+    if (!cleanTitle) return;
+
+    const parsedMin = salaryMin ? parsePositiveInt(salaryMin) : undefined;
+    const parsedMax = salaryMax ? parsePositiveInt(salaryMax) : undefined;
+
+    if (parsedMin !== undefined && parsedMax !== undefined && parsedMin > parsedMax) {
+      toast.error("Minimum salary cannot exceed maximum salary");
+      return;
+    }
 
     const now = new Date();
     const job: Job = {
       id: crypto.randomUUID(),
-      title: title.trim(),
-      description: description.trim() || undefined,
+      title: cleanTitle,
+      description: sanitizeText(description) || undefined,
       status: "open",
       employmentType: employmentType as Job["employmentType"],
       experienceLevel: experienceLevel as Job["experienceLevel"],
-      location: location.trim() || undefined,
+      location: sanitizeText(location) || undefined,
       remote,
       role: role || undefined,
       department: department || undefined,
-      salaryMin: salaryMin ? parseInt(salaryMin, 10) : undefined,
-      salaryMax: salaryMax ? parseInt(salaryMax, 10) : undefined,
-      currency: salaryMin || salaryMax ? currency : undefined,
+      salaryMin: parsedMin,
+      salaryMax: parsedMax,
+      currency: parsedMin !== undefined || parsedMax !== undefined ? currency : undefined,
       openUntil: openUntil ? new Date(openUntil) : new Date(now.getFullYear(), now.getMonth() + 1, now.getDate()),
-      tags: tags.length > 0 ? tags : undefined,
-      requirements: requirements.length > 0 ? requirements : undefined,
-      benefits: benefits.length > 0 ? benefits : undefined,
+      tags: tags.length > 0 ? tags.map(sanitizeText) : undefined,
+      requirements: requirements.length > 0 ? requirements.map(sanitizeText) : undefined,
+      benefits: benefits.length > 0 ? benefits.map(sanitizeText) : undefined,
       applications: [],
       createdAt: now,
       updatedAt: now,

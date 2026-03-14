@@ -16,6 +16,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { sanitizeText, isValidEmail, validatePassword } from "@/lib/sanitize";
 import type { Role, User } from "@/types";
 
 interface CreateUserProps {
@@ -38,7 +39,21 @@ export function CreateUser({ onSubmit, roles }: CreateUserProps) {
   };
 
   const handleSubmit = () => {
-    if (!name.trim() || !email.trim() || !password.trim() || !roleId) return;
+    const cleanName = sanitizeText(name);
+    const cleanEmail = email.trim();
+
+    if (!cleanName || !cleanEmail || !password.trim() || !roleId) return;
+
+    if (!isValidEmail(cleanEmail)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    const pw = validatePassword(password);
+    if (!pw.isValid) {
+      toast.error(pw.errors[0]);
+      return;
+    }
 
     const role = roles.find((r) => r.id === roleId);
     if (!role) return;
@@ -46,8 +61,8 @@ export function CreateUser({ onSubmit, roles }: CreateUserProps) {
     const now = new Date();
     const user: User = {
       id: Date.now(),
-      name: name.trim(),
-      email: email.trim(),
+      name: cleanName,
+      email: cleanEmail,
       password,
       role,
       isActive: true,

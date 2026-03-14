@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { sanitizeText } from "@/lib/sanitize";
 import type { Role } from "@/types";
 
 interface CreateRoleProps {
@@ -38,7 +39,7 @@ export function CreateRole({ onSubmit }: CreateRoleProps) {
   };
 
   const handleAddPermission = () => {
-    const value = permissionInput.trim().toLowerCase();
+    const value = sanitizeText(permissionInput).toLowerCase();
     if (value && !permissions.includes(value)) {
       setPermissions((prev) => [...prev, value]);
       setPermissionInput("");
@@ -46,14 +47,15 @@ export function CreateRole({ onSubmit }: CreateRoleProps) {
   };
 
   const handleSubmit = () => {
-    if (!name.trim()) return;
+    const cleanName = sanitizeText(name);
+    if (!cleanName) return;
 
     const now = new Date();
     const role: Role = {
       id: crypto.randomUUID(),
-      name: name.trim().toLowerCase(),
-      description: description.trim() || undefined,
-      permissions,
+      name: cleanName.toLowerCase(),
+      description: sanitizeText(description) || undefined,
+      permissions: permissions.map(sanitizeText),
       isActive: true,
       createdAt: now,
       updatedAt: now,

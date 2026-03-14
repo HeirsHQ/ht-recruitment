@@ -11,6 +11,7 @@ import { CandidateStageTimeline } from "@/components/workflows/candidate-stage-t
 import { ApprovalActionDialog } from "@/components/workflows/approval-action-dialog";
 import { ApprovalBadge } from "@/components/workflows/approval-badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { sanitizeText } from "@/lib/sanitize";
 import { useWorkflowStore } from "@/store/core";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -117,13 +118,15 @@ const Page = () => {
   };
 
   const handleApprove = (requestId: string, comment: string) => {
-    resolveApproval(requestId, "approved", "Current User", comment || undefined);
+    const cleanComment = sanitizeText(comment);
+    resolveApproval(requestId, "approved", "Current User", cleanComment || undefined);
     toast.success(`${candidate.name} approved`);
     setReviewDialogOpen(false);
   };
 
   const handleReject = (requestId: string, comment: string) => {
-    resolveApproval(requestId, "rejected", "Current User", comment || undefined);
+    const cleanComment = sanitizeText(comment);
+    resolveApproval(requestId, "rejected", "Current User", cleanComment || undefined);
     toast.info(`Approval rejected for ${candidate.name}`);
     setReviewDialogOpen(false);
   };

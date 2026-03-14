@@ -12,10 +12,15 @@ import { Button } from "@/components/ui/button";
 import { MicrosoftIcon } from "@/assets/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { sanitizeText } from "@/lib/sanitize";
 import { useLogin } from "@/lib/api/auth";
 
 const schema = z.object({
-  username: z.string().min(1, "Username is required"),
+  username: z
+    .string()
+    .min(1, "Username is required")
+    .max(100, "Username is too long")
+    .transform((val) => sanitizeText(val)),
   password: z.string().min(1, "Password is required"),
 });
 

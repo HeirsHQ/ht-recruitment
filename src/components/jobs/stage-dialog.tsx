@@ -8,7 +8,7 @@ import type { PipelineStageConfig } from "@/types/job";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib";
+import { cn, sanitizeText, validateEmailList } from "@/lib";
 import {
   Dialog,
   DialogContent,
@@ -66,29 +66,39 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
   const [emailTemplate, setEmailTemplate] = useState(initial?.workflow.sendEmailTemplate ?? "none");
 
   const handleSave = () => {
-    if (!title.trim()) return;
+    const cleanTitle = sanitizeText(title);
+    if (!cleanTitle) return;
+
+    // Validate recipient emails when notifications are enabled
+    if (notificationsEnabled && recipients.trim()) {
+      const { invalid } = validateEmailList(recipients);
+      if (invalid.length > 0) {
+        return; // toast or visual feedback can be added here
+      }
+    }
+
+    // Validate approver emails when approval is required
+    if (approvalRequired && approvers.trim()) {
+      const { invalid } = validateEmailList(approvers);
+      if (invalid.length > 0) {
+        return;
+      }
+    }
+
+    const recipientResult = notificationsEnabled ? validateEmailList(recipients) : { valid: [] };
+    const approverResult = approvalRequired ? validateEmailList(approvers) : { valid: [] };
 
     const stage: PipelineStageConfig = {
-      id: initial?.id ?? title.trim().toLowerCase().replace(/\s+/g, "-"),
-      title: title.trim(),
+      id: initial?.id ?? cleanTitle.toLowerCase().replace(/\s+/g, "-"),
+      title: cleanTitle,
       color,
       notifications: {
         enabled: notificationsEnabled,
-        recipients: notificationsEnabled
-          ? recipients
-              .split(",")
-              .map((e) => e.trim())
-              .filter(Boolean)
-          : [],
+        recipients: recipientResult.valid,
       },
       approval: {
         required: approvalRequired,
-        approvers: approvalRequired
-          ? approvers
-              .split(",")
-              .map((e) => e.trim())
-              .filter(Boolean)
-          : [],
+        approvers: approverResult.valid,
       },
       workflow: {
         autoMoveAfterDays: autoMoveDays ? parseInt(autoMoveDays, 10) || undefined : undefined,

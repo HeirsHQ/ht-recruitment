@@ -15,6 +15,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { sanitizeText } from "@/lib/sanitize";
 import type { ApprovalRequest, Candidate } from "@/types/workflow";
 
 interface ApprovalActionDialogProps {
@@ -41,13 +42,13 @@ export function ApprovalActionDialog({
   const [comment, setComment] = useState("");
 
   const handleApprove = () => {
-    onApprove(approvalRequest.id, comment);
+    onApprove(approvalRequest.id, sanitizeText(comment));
     setComment("");
     onOpenChange(false);
   };
 
   const handleReject = () => {
-    onReject(approvalRequest.id, comment);
+    onReject(approvalRequest.id, sanitizeText(comment));
     setComment("");
     onOpenChange(false);
   };
