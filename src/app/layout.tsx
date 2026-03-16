@@ -11,9 +11,8 @@ const mulish = Mulish({
 });
 
 export const metadata: Metadata = {
-  title: "HT Recruitment",
-  description:
-    "HT Recruitment is a platform that helps the HT People & Process find the best candidates for their jobs.",
+  title: "Converge Recruitment",
+  description: "Converge Recruitment is a platform that help find the best candidates for jobs.",
 };
 
 export default function RootLayout({

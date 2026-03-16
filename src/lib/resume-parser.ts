@@ -1,5 +1,6 @@
 import Tesseract from "tesseract.js";
-import pdfParse from "pdf-parse";
+// Import from lib directly to avoid pdf-parse's index.js loading a test file on import
+import pdfParse from "pdf-parse/lib/pdf-parse.js";
 
 export interface ResumeParseResult {
   text: string;
