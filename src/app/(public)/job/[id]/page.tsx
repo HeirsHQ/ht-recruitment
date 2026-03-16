@@ -200,7 +200,7 @@ const Page = () => {
     <>
       <Navbar />
       <div className="w-screen">
-        <div className="container mx-auto max-w-3xl space-y-8 pb-16">
+        <div className="container mx-auto space-y-8 pb-16">
           <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700">
             <ArrowLeft className="size-4" />
             All positions
