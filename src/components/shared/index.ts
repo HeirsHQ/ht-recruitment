@@ -3,6 +3,7 @@ export * from "./error-boundary";
 export * from "./header";
 export * from "./kanban";
 export * from "./kanban-list";
+export * from "./navbar";
 export * from "./otp-input";
 export * from "./pagination";
 export * from "./sidebar";

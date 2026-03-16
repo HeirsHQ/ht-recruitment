@@ -63,3 +63,11 @@ export interface PipelineStageConfig {
     sendEmailTemplate?: string;
   };
 }
+
+export interface ApplyDto {
+  fullName: string;
+  email: string;
+  phone: string;
+  coverLetter: string;
+  resumeFile: File | null;
+}
