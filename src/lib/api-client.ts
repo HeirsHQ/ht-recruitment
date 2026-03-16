@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 export function createApiClient(accessToken: string): AxiosInstance {
   const client = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL,
+    baseURL: process.env.NEXT_PUBLIC_API_URL || "https://self.3.255.113.184.nip.io/",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
