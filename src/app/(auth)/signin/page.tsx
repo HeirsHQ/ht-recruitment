@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Loader2, User } from "lucide-react";
+import { User } from "lucide-react";
 import { useFormik } from "formik";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -13,7 +13,6 @@ import { MicrosoftIcon } from "@/assets/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { sanitizeText } from "@/lib/sanitize";
-import { useLogin } from "@/lib/api/auth";
 
 const schema = z.object({
   username: z
@@ -39,7 +38,6 @@ function validate(values: SignInValues) {
 
 const Page = () => {
   const router = useRouter();
-  const login = useLogin();
 
   const { handleChange, handleSubmit, errors, touched, handleBlur } = useFormik<SignInValues>({
     initialValues: {
@@ -49,7 +47,7 @@ const Page = () => {
     validate,
     onSubmit: async (values) => {
       try {
-        await login.mutateAsync(values);
+        console.log({ values });
         toast.success("Signed in successfully");
         router.replace("/dashboard");
       } catch (error) {
@@ -58,8 +56,6 @@ const Page = () => {
       }
     },
   });
-
-  const isLoading = login.isPending;
 
   return (
     <div className="flex w-125 flex-col items-center gap-y-6 rounded-[10px] border bg-white p-6 shadow-md">
@@ -73,7 +69,7 @@ const Page = () => {
         <p className="text-3xl font-semibold">Sign In</p>
         <p className="text-sm text-gray-600">Welcome back! Please sign in to continue.</p>
       </div>
-      <Button className="w-full" size="sm" variant="outline" disabled={isLoading}>
+      <Button className="w-full" size="sm" variant="outline">
         <MicrosoftIcon /> Microsoft
       </Button>
       <div className="relative flex w-full items-center justify-center before:absolute before:top-1/2 before:left-0 before:h-px before:w-full before:translate-y-1/2 before:bg-gray-300">
@@ -82,14 +78,7 @@ const Page = () => {
       <form className="w-full space-y-4" onSubmit={handleSubmit}>
         <div className="w-full space-y-1.5">
           <Label htmlFor="username">Username</Label>
-          <Input
-            id="username"
-            name="username"
-            onChange={handleChange}
-            onBlur={handleBlur}
-            type="text"
-            disabled={isLoading}
-          />
+          <Input id="username" name="username" onChange={handleChange} onBlur={handleBlur} type="text" />
           {touched.username && errors.username && <p className="text-xs text-red-500">{errors.username}</p>}
         </div>
         <div className="w-full space-y-1.5">
@@ -99,29 +88,15 @@ const Page = () => {
               Forgot your password?
             </Link>
           </div>
-          <Input
-            id="password"
-            name="password"
-            onChange={handleChange}
-            onBlur={handleBlur}
-            type="password"
-            disabled={isLoading}
-          />
+          <Input id="password" name="password" onChange={handleChange} onBlur={handleBlur} type="password" />
           {touched.password && errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
           <div className="flex items-center gap-x-2">
-            <Checkbox disabled={isLoading} />
+            <Checkbox />
             <span className="text-xs font-medium">Keep me signed in</span>
           </div>
         </div>
-        <Button className="w-full" type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Loader2 className="animate-spin" />
-              Signing in...
-            </>
-          ) : (
-            "Sign In"
-          )}
+        <Button className="w-full" type="submit">
+          Sign In
         </Button>
       </form>
       <div className="text-sm text-gray-600">
