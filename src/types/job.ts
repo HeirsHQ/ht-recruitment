@@ -86,3 +86,24 @@ export interface ApplyDto {
   coverLetter: string;
   resumeFile: File | null;
 }
+
+export interface CreateJobDto {
+  title: string;
+  description?: string;
+  openUntil?: Date;
+  jobType: JobType | (string & {});
+  workType: WorkType | (string & {});
+  experienceType: ExperienceType | (string & {});
+  responsibilities?: string[];
+  tags?: string[];
+  location?: string;
+  remote?: boolean;
+  salaryMin?: number;
+  salaryMax?: number;
+  currency?: string;
+  role?: string;
+  department?: string;
+  company?: string;
+  requirements?: string[];
+  benefits?: string[];
+}
