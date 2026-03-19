@@ -6,9 +6,9 @@ import { toast } from "sonner";
 import Link from "next/link";
 
 import { WorkflowForm } from "@/components/workflows/workflow-form";
+import type { WorkflowTemplate } from "@/types/workflow";
 import { useWorkflowStore } from "@/store/core";
 import { Button } from "@/components/ui/button";
-import type { WorkflowTemplate } from "@/types/workflow";
 
 const Page = () => {
   const router = useRouter();
