@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 
 import type { Job, JobApplication, JobStatus, Role, User, UserStatus } from "@/types";
+import type { PipelineStageConfig } from "@/types/job";
 import type {
   ApprovalRequest,
   ApprovalStatus,
@@ -9,9 +10,9 @@ import type {
   WorkflowInstance,
   WorkflowTemplate,
 } from "@/types/workflow";
-import type { PipelineStageConfig } from "@/types/job";
 
 export const MOCK_DEPARTMENTS = [
+  { id: "all", name: "All Departments" },
   { id: "engineering", name: "Engineering" },
   { id: "product", name: "Product" },
   { id: "design", name: "Design" },
@@ -76,7 +77,7 @@ function createMockApplications(jobId: string): JobApplication[] {
 }
 
 export const MOCK_JOBS: Job[] = Array.from({ length: 16 }, () => {
-  const status: JobStatus = faker.helpers.arrayElement(["open", "open", "open", "closed"]);
+  const status: JobStatus = faker.helpers.arrayElement(["open", "closed", "cancelled", "pending", "in progress"]);
   const jobId = faker.string.uuid();
 
   return {
@@ -89,19 +90,30 @@ export const MOCK_JOBS: Job[] = Array.from({ length: 16 }, () => {
     applications: createMockApplications(jobId),
     description: faker.lorem.paragraph(),
     tags: [faker.lorem.word(), faker.lorem.word(), faker.lorem.word()],
-    employmentType: faker.helpers.arrayElement(["full-time", "part-time", "contract", "internship"]),
-    experienceLevel: faker.helpers.arrayElement(["entry", "mid", "senior", "executive"]),
+    jobType: faker.helpers.arrayElement(["full-time", "part-time", "contract"]),
+    experienceType: faker.helpers.arrayElement([
+      "internship",
+      "entry-level",
+      "associate-level",
+      "mid-level",
+      "senior-level",
+      "management-level",
+      "director-level",
+      "executive-level",
+    ]),
+    workType: faker.helpers.arrayElement(["on-site", "hybrid", "remote"]),
     location: faker.location.city(),
     remote: faker.datatype.boolean(),
     salaryMin: faker.number.int({ min: 50000, max: 100000 }),
     salaryMax: faker.number.int({ min: 100000, max: 200000 }),
-    currency: "USD",
+    currency: "NGN",
     role: faker.helpers.arrayElement(MOCK_JOB_ROLES).name,
     department: faker.helpers.arrayElement(MOCK_DEPARTMENTS).name,
     company: faker.company.name(),
+    responsibilities: [faker.lorem.sentence(), faker.lorem.sentence(), faker.lorem.sentence()],
     requirements: [faker.lorem.sentence(), faker.lorem.sentence(), faker.lorem.sentence()],
     benefits: [faker.lorem.sentence(), faker.lorem.sentence(), faker.lorem.sentence()],
-    closedAt: status === "closed" ? faker.date.recent() : undefined,
+    closedAt: status === "closed" || status === "cancelled" ? faker.date.recent() : undefined,
     views: faker.number.int({ min: 0, max: 1000 }),
   };
 });

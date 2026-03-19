@@ -1,6 +1,15 @@
-export type JobEmploymentType = "full-time" | "part-time" | "contract" | "internship";
-export type JobExperienceLevel = "entry" | "mid" | "senior" | "executive";
-export type JobStatus = "open" | "closed";
+export type JobStatus = "open" | "closed" | "cancelled" | "pending" | "in progress";
+export type JobType = "full-time" | "part-time" | "contract";
+export type WorkType = "on-site" | "hybrid" | "remote";
+export type ExperienceType =
+  | "internship"
+  | "entry-level"
+  | "associate-level"
+  | "mid-level"
+  | "senior-level"
+  | "management-level"
+  | "director-level"
+  | "executive-level";
 
 export interface Job {
   id: string;
@@ -10,8 +19,10 @@ export interface Job {
   createdAt: Date;
   updatedAt: Date;
   openUntil: Date;
-  employmentType: JobEmploymentType;
-  experienceLevel: JobExperienceLevel;
+  jobType: JobType;
+  workType: WorkType;
+  experienceType: ExperienceType;
+  responsibilities?: string[];
   tags?: string[];
   applications?: JobApplication[];
   location?: string;
@@ -67,7 +78,11 @@ export interface PipelineStageConfig {
 export interface ApplyDto {
   fullName: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
+  location: string;
+  linkedInUrl: string;
+  summary: string;
+  skills: string[];
   coverLetter: string;
   resumeFile: File | null;
 }

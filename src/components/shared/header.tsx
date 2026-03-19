@@ -1,13 +1,17 @@
 "use client";
 
 import { Bell, Moon, PanelLeft, Sun } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import { useMemo } from "react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { useGlobalStore } from "@/store/core";
+import { buildBreadcrumbs, cn } from "@/lib";
+import { Breadcrumb } from "./breadcrumb";
 import { Notification } from "@/types";
-import { Input } from "../ui/input";
-import { cn } from "@/lib";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 const notifications: Notification[] = [
   {
@@ -42,18 +46,24 @@ const notifications: Notification[] = [
 
 export const Header = () => {
   const { isCollapsed, setIsCollapsed, setTheme, theme } = useGlobalStore();
+  const pathname = usePathname();
+
+  const breadcrumbItems = useMemo(() => buildBreadcrumbs(pathname), [pathname]);
 
   const handleToggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   return (
-    <header className="bg-layout-background flex h-19 w-full items-center justify-between px-4">
+    <motion.header
+      className="bg-layout-background flex h-19 w-full items-center justify-between px-4"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
       <div className="flex items-center gap-x-4">
         <button className="h-7 w-11 border-r" onClick={() => setIsCollapsed(!isCollapsed)}>
           <PanelLeft className={cn("size-4 transition-all duration-300", isCollapsed && "rotate-180")} />
         </button>
-        <div>
-          <p className="text-sm font-bold">Good morning, John Doe</p>
-        </div>
+        <Breadcrumb items={breadcrumbItems} />
       </div>
       <div className="flex items-center gap-x-3">
         <Input className="bg-white dark:bg-neutral-800" placeholder="Search" type="search" />
@@ -77,12 +87,15 @@ export const Header = () => {
             </div>
             <div className="w-full space-y-1">
               {notifications.map((notification) => (
-                <div className="flex items-center gap-x-2" key={notification.id}>
-                  <div className={`size-2 rounded-full ${notification.isRead ? "bg-gray-300" : "bg-red-500"}`}></div>
-                  <div className="flex flex-col">
+                <div
+                  className="w-full cursor-pointer space-y-1 rounded-md px-2 py-1 hover:bg-gray-100"
+                  key={notification.id}
+                >
+                  <div className="flex w-full items-center gap-x-4">
+                    <div className={`size-2 rounded-full ${notification.isRead ? "bg-gray-300" : "bg-red-500"}`}></div>
                     <p className="text-sm font-medium">{notification.title}</p>
-                    <p className="max-w-60 truncate text-xs text-gray-500">{notification.content}</p>
                   </div>
+                  <p className="max-w-60 truncate text-xs text-gray-500">{notification.content}</p>
                 </div>
               ))}
             </div>
@@ -95,6 +108,6 @@ export const Header = () => {
           {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
         </button>
       </div>
-    </header>
+    </motion.header>
   );
 };

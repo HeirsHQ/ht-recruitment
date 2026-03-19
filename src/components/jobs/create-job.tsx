@@ -41,7 +41,7 @@ export function CreateJob({ onSubmit }: CreateJobProps) {
   const [department, setDepartment] = useState("");
   const [salaryMin, setSalaryMin] = useState("");
   const [salaryMax, setSalaryMax] = useState("");
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState("NGN");
   const [openUntil, setOpenUntil] = useState("");
 
   // List fields
@@ -63,7 +63,7 @@ export function CreateJob({ onSubmit }: CreateJobProps) {
     setDepartment("");
     setSalaryMin("");
     setSalaryMax("");
-    setCurrency("USD");
+    setCurrency("NGN");
     setOpenUntil("");
     setTagInput("");
     setTags([]);
@@ -292,10 +292,10 @@ export function CreateJob({ onSubmit }: CreateJobProps) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent position="popper">
+                    <SelectItem value="NGN">NGN</SelectItem>
                     <SelectItem value="USD">USD</SelectItem>
                     <SelectItem value="EUR">EUR</SelectItem>
                     <SelectItem value="GBP">GBP</SelectItem>
-                    <SelectItem value="NGN">NGN</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
