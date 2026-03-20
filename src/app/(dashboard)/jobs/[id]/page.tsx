@@ -688,6 +688,72 @@ const Page = () => {
             </div>
           </div>
         </TabPanel>
+        <TabPanel selected={activeTab} value="attachments">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Attachments</h3>
+              <Button variant="outline" size="sm">
+                <Plus className="size-3.5" />
+                Upload
+              </Button>
+            </div>
+            <div className="grid h-48 place-items-center rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600">
+              <div className="text-center">
+                <p className="text-sm text-gray-400">No attachments uploaded yet</p>
+                <p className="mt-1 text-xs text-gray-400">Upload documents, images, or other files related to this job</p>
+              </div>
+            </div>
+          </div>
+        </TabPanel>
+        <TabPanel selected={activeTab} value="others">
+          <div className="space-y-6">
+            <div className="space-y-2 rounded-xl border p-4">
+              <h3 className="font-semibold">Job Metadata</h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <span className="text-sm text-gray-500">Status</span>
+                  <Badge variant="secondary" className="capitalize">
+                    {job.status}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <span className="text-sm text-gray-500">Created</span>
+                  <span className="text-sm font-medium">{format(new Date(job.createdAt), "MMM d, yyyy")}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <span className="text-sm text-gray-500">Last Updated</span>
+                  <span className="text-sm font-medium">{format(new Date(job.updatedAt), "MMM d, yyyy")}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <span className="text-sm text-gray-500">Open Until</span>
+                  <span className="text-sm font-medium">{format(new Date(job.openUntil), "MMM d, yyyy")}</span>
+                </div>
+              </div>
+            </div>
+            {job.tags && job.tags.length > 0 && (
+              <div className="space-y-2 rounded-xl border p-4">
+                <h3 className="font-semibold">Tags</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {job.tags.map((tag, i) => (
+                    <Badge key={i} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {job.responsibilities && job.responsibilities.length > 0 && (
+              <div className="space-y-2 rounded-xl border p-4">
+                <h3 className="font-semibold">Responsibilities</h3>
+                <ul className="list-inside list-disc space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                  {job.responsibilities.map((item, i) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </TabPanel>
       </div>
       <StageDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} onSave={handleAddStage} />
       <StageDialog
