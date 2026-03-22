@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CheckCircle, Clock, ListFilter, Plus, Workflow, XCircle } from "lucide-react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,6 +15,16 @@ import { paginate } from "@/lib";
 type WorkflowFilter = "all" | "active" | "inactive";
 
 const initialValues = { page: 0, pageSize: 10 };
+
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } },
+} as const;
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+};
 
 const Page = () => {
   const { workflows, deleteWorkflow, getPendingApprovalsCount } = useWorkflowStore();
@@ -78,7 +89,12 @@ const Page = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+      <motion.div
+        className="flex items-center justify-between"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4 }}
+      >
         <div>
           <h1 className="text-2xl font-semibold">Workflows</h1>
           <p className="text-sm text-gray-500">Manage hiring pipeline templates</p>
@@ -89,22 +105,32 @@ const Page = () => {
             Create Workflow
           </Button>
         </Link>
-      </div>
+      </motion.div>
 
-      <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <motion.div
+        className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        variants={container}
+        initial="hidden"
+        animate="show"
+      >
         {stats.map((stat) => (
-          <div key={stat.label} className="flex flex-col justify-between rounded-xl border p-4">
+          <motion.div key={stat.label} className="flex flex-col justify-between rounded-xl border p-4" variants={item}>
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-500">{stat.label}</p>
               <stat.icon className={`size-5 ${stat.iconColor}`} />
             </div>
             <p className="mt-2 text-2xl font-bold">{stat.value}</p>
             <p className="mt-1 text-xs text-gray-400">{stat.subtitle}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="w-full space-y-4">
+      <motion.div
+        className="w-full space-y-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
         <div className="flex items-center gap-x-2">
           <ListFilter className="size-4 text-gray-500" />
           <Select
@@ -132,7 +158,7 @@ const Page = () => {
           pageSize={pageSize}
           total={filteredWorkflows.length}
         />
-      </div>
+      </motion.div>
     </div>
   );
 };

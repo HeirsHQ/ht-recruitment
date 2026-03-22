@@ -68,12 +68,18 @@
   --color-primary-800: var(--primary-800);
   --color-primary-900: var(--primary-900);
   --color-primary-950: var(--primary-850);
+  --popover: #fff;
+  --popover-foreground: #000;
+
+  --radius: 8px;
 }
 
 .dark {
   --color-background: #000;
   --color-foreground: #fff;
   --color-layout-background: #0a0a0a;
+  --popover: #000;
+  --popover-foreground: #fff;
 }
 
 @layer base {

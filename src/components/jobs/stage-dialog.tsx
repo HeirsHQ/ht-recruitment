@@ -1,14 +1,16 @@
 "use client";
 
-import { Bell, Check, ShieldCheck, Workflow } from "lucide-react";
+import { Bell, Check, ShieldCheck, Workflow, X } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { PipelineStageConfig } from "@/types/job";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { cn, sanitizeText, validateEmailList } from "@/lib";
+import { cn, sanitizeText, isValidEmail } from "@/lib";
 import {
   Dialog,
   DialogContent,
@@ -59,34 +61,60 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
   const [title, setTitle] = useState(initial?.title ?? EMPTY_STAGE.title);
   const [color, setColor] = useState(initial?.color ?? EMPTY_STAGE.color);
   const [notificationsEnabled, setNotificationsEnabled] = useState(initial?.notifications.enabled ?? false);
-  const [recipients, setRecipients] = useState(initial?.notifications.recipients.join(", ") ?? "");
+  const [recipients, setRecipients] = useState<string[]>(initial?.notifications.recipients ?? []);
+  const [recipientInput, setRecipientInput] = useState("");
+  const [recipientError, setRecipientError] = useState("");
   const [approvalRequired, setApprovalRequired] = useState(initial?.approval.required ?? false);
-  const [approvers, setApprovers] = useState(initial?.approval.approvers.join(", ") ?? "");
+  const [approvers, setApprovers] = useState<string[]>(initial?.approval.approvers ?? []);
+  const [approverInput, setApproverInput] = useState("");
+  const [approverError, setApproverError] = useState("");
+  const [workflowEnabled, setWorkflowEnabled] = useState(
+    !!(initial?.workflow.autoMoveAfterDays || initial?.workflow.sendEmailTemplate),
+  );
   const [autoMoveDays, setAutoMoveDays] = useState(initial?.workflow.autoMoveAfterDays?.toString() ?? "");
   const [emailTemplate, setEmailTemplate] = useState(initial?.workflow.sendEmailTemplate ?? "none");
+
+  const handleAddRecipient = () => {
+    const email = recipientInput.trim().toLowerCase();
+    setRecipientError("");
+    if (!email) {
+      toast.error("Please enter an email address");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setRecipientError("Please enter a valid email address");
+      return;
+    }
+    if (recipients.includes(email)) {
+      toast.error("This recipient has already been added");
+      return;
+    }
+    setRecipients((prev) => [...prev, email]);
+    setRecipientInput("");
+  };
+
+  const handleAddApprover = () => {
+    const email = approverInput.trim().toLowerCase();
+    setApproverError("");
+    if (!email) {
+      toast.error("Please enter an email address");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setApproverError("Please enter a valid email address");
+      return;
+    }
+    if (approvers.includes(email)) {
+      toast.error("This approver has already been added");
+      return;
+    }
+    setApprovers((prev) => [...prev, email]);
+    setApproverInput("");
+  };
 
   const handleSave = () => {
     const cleanTitle = sanitizeText(title);
     if (!cleanTitle) return;
-
-    // Validate recipient emails when notifications are enabled
-    if (notificationsEnabled && recipients.trim()) {
-      const { invalid } = validateEmailList(recipients);
-      if (invalid.length > 0) {
-        return; // toast or visual feedback can be added here
-      }
-    }
-
-    // Validate approver emails when approval is required
-    if (approvalRequired && approvers.trim()) {
-      const { invalid } = validateEmailList(approvers);
-      if (invalid.length > 0) {
-        return;
-      }
-    }
-
-    const recipientResult = notificationsEnabled ? validateEmailList(recipients) : { valid: [] };
-    const approverResult = approvalRequired ? validateEmailList(approvers) : { valid: [] };
 
     const stage: PipelineStageConfig = {
       id: initial?.id ?? cleanTitle.toLowerCase().replace(/\s+/g, "-"),
@@ -94,16 +122,18 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
       color,
       notifications: {
         enabled: notificationsEnabled,
-        recipients: recipientResult.valid,
+        recipients: notificationsEnabled ? recipients : [],
       },
       approval: {
         required: approvalRequired,
-        approvers: approverResult.valid,
+        approvers: approvalRequired ? approvers : [],
       },
-      workflow: {
-        autoMoveAfterDays: autoMoveDays ? parseInt(autoMoveDays, 10) || undefined : undefined,
-        sendEmailTemplate: emailTemplate !== "none" ? emailTemplate : undefined,
-      },
+      workflow: workflowEnabled
+        ? {
+            autoMoveAfterDays: autoMoveDays ? parseInt(autoMoveDays, 10) || undefined : undefined,
+            sendEmailTemplate: emailTemplate !== "none" ? emailTemplate : undefined,
+          }
+        : {},
     };
 
     onSave(stage);
@@ -158,15 +188,44 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
               <Switch checked={notificationsEnabled} onCheckedChange={setNotificationsEnabled} />
             </div>
             {notificationsEnabled && (
-              <div className="grid gap-1.5 pl-6">
-                <label className="text-xs text-gray-500">
-                  Recipients <span className="text-gray-400">(comma-separated emails)</span>
-                </label>
-                <Input
-                  value={recipients}
-                  onChange={(e) => setRecipients(e.target.value)}
-                  placeholder="hr@company.com, manager@company.com"
-                />
+              <div className="space-y-2 pl-6">
+                <label className="text-xs text-gray-500">Recipients</label>
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    value={recipientInput}
+                    onChange={(e) => {
+                      setRecipientInput(e.target.value);
+                      if (recipientError) setRecipientError("");
+                    }}
+                    placeholder="Search or enter email..."
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddRecipient();
+                      }
+                    }}
+                  />
+                  <Button variant="outline" size="default" type="button" onClick={handleAddRecipient}>
+                    Add
+                  </Button>
+                </div>
+                {recipientError && <p className="text-xs text-red-500">{recipientError}</p>}
+                {recipients.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {recipients.map((email) => (
+                      <Badge key={email} variant="secondary" className="gap-x-1 text-xs">
+                        {email}
+                        <button
+                          type="button"
+                          onClick={() => setRecipients((prev) => prev.filter((e) => e !== email))}
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -180,24 +239,57 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
               <Switch checked={approvalRequired} onCheckedChange={setApprovalRequired} />
             </div>
             {approvalRequired && (
-              <div className="grid gap-1.5 pl-6">
-                <label className="text-xs text-gray-500">
-                  Approvers <span className="text-gray-400">(comma-separated emails)</span>
-                </label>
-                <Input
-                  value={approvers}
-                  onChange={(e) => setApprovers(e.target.value)}
-                  placeholder="lead@company.com"
-                />
+              <div className="space-y-2 pl-6">
+                <label className="text-xs text-gray-500">Approvers</label>
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    value={approverInput}
+                    onChange={(e) => {
+                      setApproverInput(e.target.value);
+                      if (approverError) setApproverError("");
+                    }}
+                    placeholder="Search or enter email..."
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddApprover();
+                      }
+                    }}
+                  />
+                  <Button variant="outline" size="default" type="button" onClick={handleAddApprover}>
+                    Add
+                  </Button>
+                </div>
+                {approverError && <p className="text-xs text-red-500">{approverError}</p>}
+                {approvers.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {approvers.map((email) => (
+                      <Badge key={email} variant="secondary" className="gap-x-1 text-xs">
+                        {email}
+                        <button
+                          type="button"
+                          onClick={() => setApprovers((prev) => prev.filter((e) => e !== email))}
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
           <hr className="border-neutral-200 dark:border-neutral-700" />
           <div className="space-y-3">
-            <div className="flex items-center gap-x-2">
-              <Workflow className="size-4 text-gray-500" />
-              <span className="text-sm font-medium">Workflow</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-x-2">
+                <Workflow className="size-4 text-gray-500" />
+                <span className="text-sm font-medium">Workflow</span>
+              </div>
+              <Switch checked={workflowEnabled} onCheckedChange={setWorkflowEnabled} />
             </div>
+            {workflowEnabled && (
             <div className="grid gap-3 pl-6">
               <div className="grid gap-1.5">
                 <label className="text-xs text-gray-500">Auto-move after (days)</label>
@@ -225,6 +317,7 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
                 </Select>
               </div>
             </div>
+            )}
           </div>
         </div>
         <DialogFooter>

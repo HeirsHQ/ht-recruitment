@@ -404,7 +404,7 @@ const Page = () => {
               )}
               <div className="flex items-center justify-between">
                 <span className="text-gray-500">Type</span>
-                <span className="capitalize">{job.employmentType.replace("-", " ")}</span>
+                <span className="capitalize">{job.workType.replace("-", " ")}</span>
               </div>
             </div>
           </div>

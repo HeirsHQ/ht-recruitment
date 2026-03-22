@@ -1,26 +1,21 @@
 "use client";
 
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { format, formatDistanceToNow, startOfDay } from "date-fns";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { format, formatDistanceToNow, startOfDay } from "date-fns";
 import { toast } from "sonner";
 import Link from "next/link";
 import {
-  ArrowLeft,
   ArrowRightLeft,
   BarChart3,
   Briefcase,
   Building2,
-  Calendar,
   CalendarDays,
-  Clock,
-  DollarSign,
   ExternalLink,
   Eye,
   Globe,
-  GraduationCap,
   KanbanIcon,
   Lightbulb,
   List,
@@ -33,6 +28,7 @@ import {
   TrendingUp,
   UserPlus,
   Users,
+  DollarSign,
 } from "lucide-react";
 
 import { Kanban, KanbanList, TabPanel, type KanbanColumnConfig, type KanbanDragEndEvent } from "@/components/shared";
@@ -42,17 +38,19 @@ import { StageDialog } from "@/components/jobs/stage-dialog";
 import KanbanCard from "@/components/jobs/kanban-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib";
+import { cn, formatSalary } from "@/lib";
 
 import { MOCK_JOBS } from "@/__mock__/database";
 
 const tabs = [
   { label: "Overview", value: "overview" },
-  { label: "Applications", value: "applications" },
-  { label: "Analytics", value: "analytics" },
+  { label: "Applicants", value: "applicants" },
   { label: "Activities", value: "activities" },
-  { label: "Sources", value: "sources" },
   { label: "AI Recommendations", value: "ai-recommendations" },
+  { label: "Sources", value: "sources" },
+  { label: "Attachments", value: "attachments" },
+  { label: "Analytics", value: "analytics" },
+  { label: "Others", value: "others" },
 ];
 
 const DEFAULT_STAGES: PipelineStageConfig[] = [
@@ -97,20 +95,6 @@ const DEFAULT_STAGES: PipelineStageConfig[] = [
     workflow: { sendEmailTemplate: "offer-letter" },
   },
 ];
-
-const employmentTypeLabel: Record<string, string> = {
-  "full-time": "Full-time",
-  "part-time": "Part-time",
-  contract: "Contract",
-  internship: "Internship",
-};
-
-const experienceLevelLabel: Record<string, string> = {
-  entry: "Entry",
-  mid: "Mid",
-  senior: "Senior",
-  executive: "Executive",
-};
 
 const views = [
   { label: "Kanban", value: "kanban", icon: KanbanIcon },
@@ -279,38 +263,65 @@ const Page = () => {
     toast.success(`Status "${stage?.title}" deleted`);
   };
 
+  const salary = formatSalary(job.salaryMin, job.salaryMax, job.currency);
+
   return (
     <div className="space-y-6 p-6">
-      <Link href="/jobs">
-        <Button variant="ghost" size="sm">
-          <ArrowLeft className="size-4" />
-          Back
-        </Button>
-      </Link>
       <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-x-2">
-            <h1 className="text-2xl font-semibold">{job.title}</h1>
-            <Badge
-              className={cn(
-                "text-xs uppercase",
-                job.status === "open"
-                  ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"
-                  : "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
-              )}
-            >
-              {job.status}
-            </Badge>
-          </div>
-          {job.company && <p className="text-sm text-gray-500">{job.company}</p>}
+        <div className="">
+          <p className="text-lg font-semibold">Job Details</p>
+          <p className="text-sm text-gray-600">View job information, status and administrative actions</p>
+        </div>
+        <div className="flex items-center gap-x-4">
+          <Button size="sm" variant="ghost">
+            Edit Details
+          </Button>
+          <Button size="sm">Delete Job</Button>
         </div>
       </div>
+      <motion.div
+        className="space-y-4 rounded-lg border p-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
+        <p className="text-2xl font-bold">{job.title}</p>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <div className="flex items-center gap-x-2">
+            <Building2 className="size-4" />
+            <span className="text-sm text-gray-600">{job.company}</span>
+          </div>
+          <div className="flex items-center gap-x-2">
+            <Briefcase className="size-4" />
+            <span className="text-sm text-gray-600">{job.department}</span>
+          </div>
+          <div className="flex items-center gap-x-2">
+            <DollarSign className="size-4" />
+            <span className="text-sm text-gray-600">{salary}</span>
+          </div>
+          <div className="flex items-center gap-x-2">
+            <MapPin className="size-4" />
+            <span className="text-sm text-gray-600">{job.location}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-x-4">
+          <div className="flex items-center justify-center rounded-md bg-lime-50 p-2 text-xs text-lime-600 capitalize">
+            {job.jobType.replace("-", " ")}
+          </div>
+          <div className="flex items-center justify-center rounded-md bg-purple-50 p-2 text-xs text-purple-600 capitalize">
+            {job.workType.replace("-", " ")}
+          </div>
+          <div className="flex items-center justify-center rounded-md bg-cyan-50 p-2 text-xs text-cyan-600 capitalize">
+            {job.experienceType.replace("-", " ")}
+          </div>
+        </div>
+      </motion.div>
       <div className="w-full space-y-4">
-        <div className="flex w-full items-center rounded-md bg-gray-100 p-1 dark:bg-neutral-800">
+        <div className="flex w-full items-center justify-between rounded-md bg-gray-100 p-1 dark:bg-neutral-800">
           {tabs.map((tab) => (
             <button
               className={cn(
-                "flex h-8 min-w-37.5 items-center justify-center rounded-md px-3 text-sm font-medium transition-colors",
+                "flex h-7 flex-1 items-center justify-center rounded-md px-3 text-sm font-medium transition-colors",
                 activeTab === tab.value
                   ? "bg-white text-gray-900 shadow-sm dark:bg-neutral-700 dark:text-white"
                   : "text-gray-500",
@@ -318,101 +329,41 @@ const Page = () => {
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
             >
-              {tab.label}
+              <span className="whitespace-nowrap">{tab.label}</span>
             </button>
           ))}
         </div>
         <TabPanel selected={activeTab} value="overview">
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="space-y-6 lg:col-span-2">
-              {job.description && (
-                <div className="space-y-2 rounded-xl border p-4">
-                  <h3 className="font-semibold">Description</h3>
-                  <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">{job.description}</p>
-                </div>
-              )}
-              {job.requirements && job.requirements.length > 0 && (
-                <div className="space-y-2 rounded-xl border p-4">
-                  <h3 className="font-semibold">Requirements</h3>
-                  <ul className="list-inside list-disc space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                    {job.requirements.map((req, i) => (
-                      <li key={i}>{req}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {job.benefits && job.benefits.length > 0 && (
-                <div className="space-y-2 rounded-xl border p-4">
-                  <h3 className="font-semibold">Benefits</h3>
-                  <ul className="list-inside list-disc space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                    {job.benefits.map((benefit, i) => (
-                      <li key={i}>{benefit}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-            <div className="space-y-4">
-              <div className="space-y-3 rounded-xl border p-4">
-                <h3 className="font-semibold">Details</h3>
-                <div className="space-y-3 text-sm">
-                  {job.location && (
-                    <div className="flex items-center gap-x-2 text-gray-600 dark:text-gray-400">
-                      <MapPin className="size-4 shrink-0" />
-                      <span>
-                        {job.location}
-                        {job.remote && " (Remote)"}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-x-2 text-gray-600 dark:text-gray-400">
-                    <Briefcase className="size-4 shrink-0" />
-                    <span>{employmentTypeLabel[job.employmentType]}</span>
-                  </div>
-                  <div className="flex items-center gap-x-2 text-gray-600 dark:text-gray-400">
-                    <GraduationCap className="size-4 shrink-0" />
-                    <span>{experienceLevelLabel[job.experienceLevel]} level</span>
-                  </div>
-                  {job.department && (
-                    <div className="flex items-center gap-x-2 text-gray-600 dark:text-gray-400">
-                      <Building2 className="size-4 shrink-0" />
-                      <span>{job.department}</span>
-                    </div>
-                  )}
-                  {job.salaryMin != null && job.salaryMax != null && (
-                    <div className="flex items-center gap-x-2 text-gray-600 dark:text-gray-400">
-                      <DollarSign className="size-4 shrink-0" />
-                      <span>
-                        {job.salaryMin.toLocaleString()} - {job.salaryMax.toLocaleString()} {job.currency}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-x-2 text-gray-600 dark:text-gray-400">
-                    <Calendar className="size-4 shrink-0" />
-                    <span>Posted {format(new Date(job.createdAt), "dd MMM yyyy")}</span>
-                  </div>
-                  <div className="flex items-center gap-x-2 text-gray-600 dark:text-gray-400">
-                    <Clock className="size-4 shrink-0" />
-                    <span>Deadline {format(new Date(job.openUntil), "dd MMM yyyy")}</span>
-                  </div>
-                </div>
+          <div className="space-y-6">
+            {job.description && (
+              <div className="space-y-2 rounded-xl border p-4">
+                <h3 className="font-semibold">Description</h3>
+                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">{job.description}</p>
               </div>
-              {job.tags && job.tags.length > 0 && (
-                <div className="space-y-3 rounded-xl border p-4">
-                  <h3 className="font-semibold">Tags</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {job.tags.map((tag, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
+            {job.requirements && job.requirements.length > 0 && (
+              <div className="space-y-2 rounded-xl border p-4">
+                <h3 className="font-semibold">Requirements</h3>
+                <ul className="list-inside list-disc space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                  {job.requirements.map((req, i) => (
+                    <li key={i}>{req}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {job.benefits && job.benefits.length > 0 && (
+              <div className="space-y-2 rounded-xl border p-4">
+                <h3 className="font-semibold">Benefits</h3>
+                <ul className="list-inside list-disc space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                  {job.benefits.map((benefit, i) => (
+                    <li key={i}>{benefit}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </TabPanel>
-        <TabPanel selected={activeTab} value="applications">
+        <TabPanel selected={activeTab} value="applicants">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-x-2">
@@ -486,78 +437,80 @@ const Page = () => {
           </div>
         </TabPanel>
         <TabPanel selected={activeTab} value="analytics">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex flex-col justify-between rounded-xl border p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500">Views</p>
-                <Eye className="size-5 text-gray-500" />
-              </div>
-              <p className="mt-2 text-2xl font-bold">{job.views ?? 0}</p>
-              <p className="mt-1 text-xs text-gray-400">Total impressions</p>
-            </div>
-            <div className="flex flex-col justify-between rounded-xl border p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500">Applications</p>
-                <Users className="size-5 text-purple-600" />
-              </div>
-              <p className="mt-2 text-2xl font-bold">{stats.total}</p>
-              <p className="mt-1 text-xs text-gray-400">Total received</p>
-            </div>
-            <div className="flex flex-col justify-between rounded-xl border p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500">Pending</p>
-                <Globe className="size-5 text-amber-500" />
-              </div>
-              <p className="mt-2 text-2xl font-bold">{stats.pending}</p>
-              <p className="mt-1 text-xs text-gray-400">Awaiting review</p>
-            </div>
-            <div className="flex flex-col justify-between rounded-xl border p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500">Accepted</p>
-                <Users className="size-5 text-green-600" />
-              </div>
-              <p className="mt-2 text-2xl font-bold">{stats.accepted}</p>
-              <p className="mt-1 text-xs text-gray-400">Moved forward</p>
-            </div>
-          </div>
-          <div className="space-y-4 rounded-xl border p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold">Applications Over Time</h3>
-                <p className="text-xs text-gray-500">Daily application volume for this job</p>
-              </div>
-              <CalendarDays className="size-5 text-gray-400" />
-            </div>
-            {applicationsOverTime.length > 1 ? (
-              <ChartContainer config={applicationsChartConfig} className="h-64 w-full">
-                <AreaChart data={applicationsOverTime} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="fillJobApplications" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--color-applications)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="var(--color-applications)" stopOpacity={0.05} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
-                  <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area
-                    type="monotone"
-                    dataKey="applications"
-                    stroke="var(--color-applications)"
-                    strokeWidth={2}
-                    fill="url(#fillJobApplications)"
-                  />
-                </AreaChart>
-              </ChartContainer>
-            ) : (
-              <div className="grid h-64 place-items-center rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600">
-                <div className="text-center">
-                  <CalendarDays className="mx-auto size-8 text-gray-300 dark:text-gray-600" />
-                  <p className="mt-2 text-sm text-gray-400">Not enough data for trend chart</p>
+          <div className="w-full space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="flex flex-col justify-between rounded-xl border p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-500">Views</p>
+                  <Eye className="size-5 text-gray-500" />
                 </div>
+                <p className="mt-2 text-2xl font-bold">{job.views ?? 0}</p>
+                <p className="mt-1 text-xs text-gray-400">Total impressions</p>
               </div>
-            )}
+              <div className="flex flex-col justify-between rounded-xl border p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-500">Applications</p>
+                  <Users className="size-5 text-purple-600" />
+                </div>
+                <p className="mt-2 text-2xl font-bold">{stats.total}</p>
+                <p className="mt-1 text-xs text-gray-400">Total received</p>
+              </div>
+              <div className="flex flex-col justify-between rounded-xl border p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-500">Pending</p>
+                  <Globe className="size-5 text-amber-500" />
+                </div>
+                <p className="mt-2 text-2xl font-bold">{stats.pending}</p>
+                <p className="mt-1 text-xs text-gray-400">Awaiting review</p>
+              </div>
+              <div className="flex flex-col justify-between rounded-xl border p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-500">Accepted</p>
+                  <Users className="size-5 text-green-600" />
+                </div>
+                <p className="mt-2 text-2xl font-bold">{stats.accepted}</p>
+                <p className="mt-1 text-xs text-gray-400">Moved forward</p>
+              </div>
+            </div>
+            <div className="space-y-4 rounded-xl border p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold">Applications Over Time</h3>
+                  <p className="text-xs text-gray-500">Daily application volume for this job</p>
+                </div>
+                <CalendarDays className="size-5 text-gray-400" />
+              </div>
+              {applicationsOverTime.length > 1 ? (
+                <ChartContainer config={applicationsChartConfig} className="h-64 w-full">
+                  <AreaChart data={applicationsOverTime} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="fillJobApplications" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-applications)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="var(--color-applications)" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+                    <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area
+                      type="monotone"
+                      dataKey="applications"
+                      stroke="var(--color-applications)"
+                      strokeWidth={2}
+                      fill="url(#fillJobApplications)"
+                    />
+                  </AreaChart>
+                </ChartContainer>
+              ) : (
+                <div className="grid h-64 place-items-center rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600">
+                  <div className="text-center">
+                    <CalendarDays className="mx-auto size-8 text-gray-300 dark:text-gray-600" />
+                    <p className="mt-2 text-sm text-gray-400">Not enough data for trend chart</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </TabPanel>
         <TabPanel selected={activeTab} value="activities">
@@ -733,6 +686,72 @@ const Page = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </TabPanel>
+        <TabPanel selected={activeTab} value="attachments">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Attachments</h3>
+              <Button variant="outline" size="sm">
+                <Plus className="size-3.5" />
+                Upload
+              </Button>
+            </div>
+            <div className="grid h-48 place-items-center rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600">
+              <div className="text-center">
+                <p className="text-sm text-gray-400">No attachments uploaded yet</p>
+                <p className="mt-1 text-xs text-gray-400">Upload documents, images, or other files related to this job</p>
+              </div>
+            </div>
+          </div>
+        </TabPanel>
+        <TabPanel selected={activeTab} value="others">
+          <div className="space-y-6">
+            <div className="space-y-2 rounded-xl border p-4">
+              <h3 className="font-semibold">Job Metadata</h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <span className="text-sm text-gray-500">Status</span>
+                  <Badge variant="secondary" className="capitalize">
+                    {job.status}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <span className="text-sm text-gray-500">Created</span>
+                  <span className="text-sm font-medium">{format(new Date(job.createdAt), "MMM d, yyyy")}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <span className="text-sm text-gray-500">Last Updated</span>
+                  <span className="text-sm font-medium">{format(new Date(job.updatedAt), "MMM d, yyyy")}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <span className="text-sm text-gray-500">Open Until</span>
+                  <span className="text-sm font-medium">{format(new Date(job.openUntil), "MMM d, yyyy")}</span>
+                </div>
+              </div>
+            </div>
+            {job.tags && job.tags.length > 0 && (
+              <div className="space-y-2 rounded-xl border p-4">
+                <h3 className="font-semibold">Tags</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {job.tags.map((tag, i) => (
+                    <Badge key={i} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {job.responsibilities && job.responsibilities.length > 0 && (
+              <div className="space-y-2 rounded-xl border p-4">
+                <h3 className="font-semibold">Responsibilities</h3>
+                <ul className="list-inside list-disc space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                  {job.responsibilities.map((item, i) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </TabPanel>
       </div>

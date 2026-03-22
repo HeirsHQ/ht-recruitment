@@ -1,8 +1,10 @@
 "use client";
 
-import { Briefcase, CheckCircle, Clock, FileText, Users } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis, type PieLabelRenderProps } from "recharts";
+import { Briefcase, CheckCircle, Clock, FileText } from "lucide-react";
+import { motion } from "framer-motion";
 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
   type ChartConfig,
@@ -12,21 +14,20 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const stats = [
-  { label: "Total Jobs", value: 24, subtitle: "All postings", icon: Briefcase, iconColor: "text-gray-500" },
-  { label: "Open Positions", value: 12, subtitle: "Currently active", icon: CheckCircle, iconColor: "text-green-600" },
-  { label: "Total Applications", value: 340, subtitle: "All received", icon: FileText, iconColor: "text-purple-600" },
-  { label: "Pending Review", value: 56, subtitle: "Awaiting action", icon: Clock, iconColor: "text-amber-500" },
+  { label: "Active Jobs", value: 24, subtitle: "All postings", icon: Briefcase, iconColor: "text-gray-500" },
+  { label: "Total Candidates", value: 340, subtitle: "All received", icon: FileText, iconColor: "text-purple-600" },
+  { label: "In Pipeline", value: 12, subtitle: "Currently active", icon: CheckCircle, iconColor: "text-green-600" },
+  { label: "Hired", value: 56, subtitle: "Awaiting action", icon: Clock, iconColor: "text-amber-500" },
 ];
 
 const pipelineData = [
-  { stage: "Applied", count: 120 },
-  { stage: "Screening", count: 85 },
-  { stage: "Interview", count: 50 },
-  { stage: "Offer", count: 18 },
-  { stage: "Hired", count: 10 },
+  { stage: "Applied", count: 120, color: "#3b82f6" },
+  { stage: "Screening", count: 85, color: "#6366f1" },
+  { stage: "Interview", count: 50, color: "#8b5cf6" },
+  { stage: "Offer", count: 18, color: "#f59e0b" },
+  { stage: "Hired", count: 56, color: "#10b981" },
 ];
 
 const pipelineConfig: ChartConfig = {
@@ -49,6 +50,22 @@ const candidateSourceConfig: ChartConfig = {
   Referral: { label: "Referral", color: SOURCE_COLORS[2] },
   "Career Page": { label: "Career Page", color: SOURCE_COLORS[3] },
   Other: { label: "Other", color: SOURCE_COLORS[4] },
+};
+
+const sourceTotal = candidateSourceData.reduce((sum, d) => sum + d.value, 0);
+
+const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, value }: PieLabelRenderProps) => {
+  const RADIAN = Math.PI / 180;
+  const radius = (Number(innerRadius) + Number(outerRadius)) / 2;
+  const x = Number(cx) + radius * Math.cos(-Number(midAngle) * RADIAN);
+  const y = Number(cy) + radius * Math.sin(-Number(midAngle) * RADIAN);
+  const percent = ((Number(value) / sourceTotal) * 100).toFixed(0);
+
+  return (
+    <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={600}>
+      {percent}%
+    </text>
+  );
 };
 
 const recentJobs = [
@@ -99,39 +116,56 @@ const recentJobs = [
   },
 ];
 
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } },
+} as const;
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+};
+
+const fadeIn = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
+};
+
 const Page = () => {
   return (
     <div className="space-y-6 p-6">
-      {/* Header */}
-      <div>
+      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
         <h1 className="text-2xl font-semibold">Dashboard</h1>
         <p className="text-sm text-gray-500">Overview of your recruitment activity</p>
-      </div>
-
-      {/* Stat cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      </motion.div>
+      <motion.div
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        variants={container}
+        initial="hidden"
+        animate="show"
+      >
         {stats.map((stat) => (
-          <div key={stat.label} className="flex flex-col justify-between rounded-xl border p-4">
+          <motion.div key={stat.label} className="flex flex-col justify-between rounded-xl border p-4" variants={item}>
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-500">{stat.label}</p>
               <stat.icon className={`size-5 ${stat.iconColor}`} />
             </div>
             <p className="mt-2 text-2xl font-bold">{stat.value}</p>
             <p className="mt-1 text-xs text-gray-400">{stat.subtitle}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
-
-      {/* Charts */}
+      </motion.div>
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Pipeline Distribution */}
-        <div className="space-y-4 rounded-xl border p-4">
+        <motion.div
+          className="space-y-4 rounded-xl border p-4"
+          variants={fadeIn}
+          initial="hidden"
+          animate="show"
+          transition={{ delay: 0.3 }}
+        >
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold">Pipeline Distribution</h3>
-              <p className="text-xs text-gray-500">Candidates across hiring stages</p>
-            </div>
-            <Users className="size-5 text-gray-400" />
+            <h3 className="font-semibold">Pipeline Distribution</h3>
+            <div className="flex items-center"></div>
           </div>
           <ChartContainer config={pipelineConfig} className="h-64 w-full">
             <BarChart data={pipelineData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -139,19 +173,23 @@ const Page = () => {
               <XAxis dataKey="stage" tickLine={false} axisLine={false} tickMargin={8} />
               <YAxis tickLine={false} axisLine={false} tickMargin={8} />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="count" fill="var(--color-count)" radius={[4, 4, 0, 0]} />
+              <Bar barSize={100} dataKey="count" radius={[4, 4, 0, 0]}>
+                {pipelineData.map((entry) => (
+                  <Cell key={entry.stage} fill={entry.color} />
+                ))}
+              </Bar>
             </BarChart>
           </ChartContainer>
-        </div>
-
-        {/* Candidate by Source */}
-        <div className="space-y-4 rounded-xl border p-4">
+        </motion.div>
+        <motion.div
+          className="space-y-4 rounded-xl border p-4"
+          variants={fadeIn}
+          initial="hidden"
+          animate="show"
+          transition={{ delay: 0.4 }}
+        >
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold">Candidates by Source</h3>
-              <p className="text-xs text-gray-500">Where your candidates come from</p>
-            </div>
-            <Users className="size-5 text-gray-400" />
+            <h3 className="font-semibold">Candidates by Source</h3>
           </div>
           <ChartContainer config={candidateSourceConfig} className="h-64 w-full">
             <PieChart>
@@ -162,8 +200,9 @@ const Page = () => {
                 nameKey="source"
                 cx="50%"
                 cy="50%"
-                innerRadius={55}
                 outerRadius={90}
+                label={renderPieLabel}
+                labelLine={false}
               >
                 {candidateSourceData.map((entry) => (
                   <Cell key={entry.source} fill={entry.fill} />
@@ -172,17 +211,18 @@ const Page = () => {
               <ChartLegend content={<ChartLegendContent nameKey="source" />} />
             </PieChart>
           </ChartContainer>
-        </div>
+        </motion.div>
       </div>
-
-      {/* Recent Jobs */}
-      <div className="space-y-4 rounded-xl border p-4">
+      <motion.div
+        className="space-y-4 rounded-xl border p-4"
+        variants={fadeIn}
+        initial="hidden"
+        animate="show"
+        transition={{ delay: 0.5 }}
+      >
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold">Recent Jobs</h3>
-            <p className="text-xs text-gray-500">Latest job postings</p>
-          </div>
-          <Briefcase className="size-5 text-gray-400" />
+          <h3 className="font-semibold">Recent Jobs</h3>
+          <div></div>
         </div>
         <Table>
           <TableHeader>
@@ -210,7 +250,7 @@ const Page = () => {
             ))}
           </TableBody>
         </Table>
-      </div>
+      </motion.div>
     </div>
   );
 };
