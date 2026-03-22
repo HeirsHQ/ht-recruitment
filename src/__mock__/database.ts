@@ -64,7 +64,7 @@ function createMockApplications(jobId: string): JobApplication[] {
       applicant: {
         id: faker.string.uuid(),
         name: faker.person.fullName(),
-        email: faker.internet.email(),
+        email: faker.internet.email({ provider: "gmail.com" }),
         resume: faker.internet.url(),
         coverLetter: faker.datatype.boolean() ? faker.lorem.paragraph() : undefined,
         appliedAt: faker.date.recent(),
