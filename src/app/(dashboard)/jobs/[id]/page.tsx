@@ -22,17 +22,18 @@ import {
   MapPin,
   MessageSquare,
   Plus,
-  Settings2,
   Sparkles,
   Target,
   TrendingUp,
   UserPlus,
   Users,
   DollarSign,
+  ListFilter,
 } from "lucide-react";
 
 import { Kanban, KanbanList, TabPanel, type KanbanColumnConfig, type KanbanDragEndEvent } from "@/components/shared";
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { JobApplication, PipelineStageConfig } from "@/types/job";
 import { StageDialog } from "@/components/jobs/stage-dialog";
 import KanbanCard from "@/components/jobs/kanban-card";
@@ -366,21 +367,11 @@ const Page = () => {
         <TabPanel selected={activeTab} value="applicants">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-x-2">
-                <h3 className="text-sm font-medium text-gray-500">Pipeline stages</h3>
-                <div className="flex items-center gap-x-1">
-                  {stages.map((stage) => (
-                    <button
-                      key={stage.id}
-                      onClick={() => setEditingStage(stage)}
-                      className="group flex items-center gap-x-1 rounded-md px-2 py-1 text-xs transition-colors hover:bg-gray-100 dark:hover:bg-neutral-800"
-                    >
-                      <span className="size-2 rounded-full" style={{ backgroundColor: stage.color }} />
-                      <span>{stage.title}</span>
-                      <Settings2 className="size-3 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </button>
-                  ))}
-                </div>
+              <div className="flex items-center gap-x-4">
+                <Button variant="outline" size="sm" onClick={() => setAddDialogOpen(true)}>
+                  <Plus className="size-3.5" />
+                  Add status
+                </Button>
               </div>
               <div className="flex items-center gap-x-4">
                 <motion.div className="flex h-8 items-center rounded-md bg-gray-100 p-1 dark:bg-neutral-800">
@@ -402,10 +393,14 @@ const Page = () => {
                     </motion.button>
                   ))}
                 </motion.div>
-                <Button variant="outline" size="sm" onClick={() => setAddDialogOpen(true)}>
-                  <Plus className="size-3.5" />
-                  Add status
-                </Button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button className="w-25" size="sm" variant="outline">
+                      <ListFilter className="size-4" /> Filter
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-50"></PopoverContent>
+                </Popover>
               </div>
             </div>
             {view === "kanban" ? (
@@ -700,7 +695,9 @@ const Page = () => {
             <div className="grid h-48 place-items-center rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600">
               <div className="text-center">
                 <p className="text-sm text-gray-400">No attachments uploaded yet</p>
-                <p className="mt-1 text-xs text-gray-400">Upload documents, images, or other files related to this job</p>
+                <p className="mt-1 text-xs text-gray-400">
+                  Upload documents, images, or other files related to this job
+                </p>
               </div>
             </div>
           </div>

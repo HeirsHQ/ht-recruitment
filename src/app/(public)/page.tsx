@@ -256,7 +256,7 @@ const Page = () => {
                   {layout === "grid" ? (
                     <motion.div
                       key="grid"
-                      className="grid grid-cols-2 gap-x-6 gap-y-4"
+                      className="grid min-h-155 grid-cols-2 gap-x-6 gap-y-4"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -271,7 +271,7 @@ const Page = () => {
                   ) : (
                     <motion.div
                       key="list"
-                      className="grid grid-cols-1 gap-y-2.5"
+                      className="flex min-h-155 flex-col gap-y-2.5"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}

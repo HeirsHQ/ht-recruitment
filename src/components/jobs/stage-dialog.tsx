@@ -216,10 +216,7 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
                     {recipients.map((email) => (
                       <Badge key={email} variant="secondary" className="gap-x-1 text-xs">
                         {email}
-                        <button
-                          type="button"
-                          onClick={() => setRecipients((prev) => prev.filter((e) => e !== email))}
-                        >
+                        <button type="button" onClick={() => setRecipients((prev) => prev.filter((e) => e !== email))}>
                           <X className="size-3" />
                         </button>
                       </Badge>
@@ -267,10 +264,7 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
                     {approvers.map((email) => (
                       <Badge key={email} variant="secondary" className="gap-x-1 text-xs">
                         {email}
-                        <button
-                          type="button"
-                          onClick={() => setApprovers((prev) => prev.filter((e) => e !== email))}
-                        >
+                        <button type="button" onClick={() => setApprovers((prev) => prev.filter((e) => e !== email))}>
                           <X className="size-3" />
                         </button>
                       </Badge>
@@ -290,33 +284,33 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
               <Switch checked={workflowEnabled} onCheckedChange={setWorkflowEnabled} />
             </div>
             {workflowEnabled && (
-            <div className="grid gap-3 pl-6">
-              <div className="grid gap-1.5">
-                <label className="text-xs text-gray-500">Auto-move after (days)</label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={autoMoveDays}
-                  onChange={(e) => setAutoMoveDays(e.target.value)}
-                  placeholder="Leave empty to disable"
-                />
+              <div className="grid gap-3 pl-6">
+                <div className="grid gap-1.5">
+                  <label className="text-xs text-gray-500">Auto-move after (days)</label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={autoMoveDays}
+                    onChange={(e) => setAutoMoveDays(e.target.value)}
+                    placeholder="Leave empty to disable"
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <label className="text-xs text-gray-500">Send email template</label>
+                  <Select value={emailTemplate} onValueChange={setEmailTemplate}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      {EMAIL_TEMPLATES.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="grid gap-1.5">
-                <label className="text-xs text-gray-500">Send email template</label>
-                <Select value={emailTemplate} onValueChange={setEmailTemplate}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    {EMAIL_TEMPLATES.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
             )}
           </div>
         </div>

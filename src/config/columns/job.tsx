@@ -222,11 +222,6 @@ export const columns: ColumnDef<Job>[] = [
     cell: ({ row }) => <span className="capitalize">{row.original.experienceType.replace("-", " ")}</span>,
   },
   {
-    id: "salary",
-    header: "Salary",
-    cell: ({}) => <div></div>,
-  },
-  {
     id: "applicants",
     header: "Applicants",
     cell: ({ row }) => <span>{row.original.applications?.length}</span>,
