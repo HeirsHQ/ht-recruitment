@@ -11,3 +11,22 @@ export function paginate<T>(data: T[], page: number, limit: number, total: numbe
   if (startIndex > total) return [];
   return data.slice(startIndex, endIndex);
 }
+
+export function formatCurrency(amount: number, currency = "NGN") {
+  return new Intl.NumberFormat("en-NG", {
+    currency,
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+    notation: "compact",
+    style: "currency",
+  }).format(amount);
+}
+
+export function formatSalary(min?: number, max?: number, currency = "NGN") {
+  if (!min && !max) return null;
+  const fmt = (n: number) =>
+    new Intl.NumberFormat("en-NG", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+  if (min && max) return `${fmt(min)} - ${fmt(max)}`;
+  if (min) return `From ${fmt(min)}`;
+  return `Up to ${fmt(max!)}`;
+}

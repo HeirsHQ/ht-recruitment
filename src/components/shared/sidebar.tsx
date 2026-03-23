@@ -8,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useGlobalStore } from "@/store/core";
 import { Button } from "../ui/button";
 import { ROUTES } from "@/config";
@@ -26,9 +27,9 @@ export const Sidebar = () => {
       transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       className="bg-layout-background h-full overflow-hidden"
     >
-      <div className="flex h-19 w-full items-center justify-center border-b">
-        <div className={cn("relative", isCollapsed ? "hidden" : "aspect-[7.2/1] w-4/5")}>
-          <Image alt="converge" className="object-contain" fill sizes="100%" src="/assets/images/logo.png" />
+      <div className="flex h-19 w-full items-center justify-center">
+        <div className={cn("relative", isCollapsed ? "hidden" : "aspect-[2.7/1] w-25")}>
+          <Image alt="converge" className="object-contain" fill sizes="100%" src="/assets/images/converge-logo.png" />
         </div>
       </div>
       <div className="flex h-[calc(100%-76px)] w-full flex-col justify-between">
@@ -58,15 +59,21 @@ export const Sidebar = () => {
             </Link>
           ))}
         </div>
-        <div className={cn("flex items-center p-4", isCollapsed ? "justify-center" : "justify-between")}>
+        <div className={cn("flex items-center border-t p-4", isCollapsed ? "justify-center" : "justify-between")}>
           <div
             className={cn(
-              "overflow-hidden transition-opacity duration-200",
+              "flex items-center gap-x-3 overflow-hidden transition-opacity duration-200",
               isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
             )}
           >
-            <p className="text-sm font-semibold whitespace-nowrap">{"John Doe"}</p>
-            <p className="text-xs whitespace-nowrap text-gray-600 dark:text-gray-400">{"Software Engineer"}</p>
+            <Avatar className="size-8 rounded-lg">
+              <AvatarImage src="" />
+              <AvatarFallback className="rounded-lg">JD</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-sm font-semibold whitespace-nowrap">{"John Doe"}</p>
+              <p className="text-xs whitespace-nowrap text-gray-600 dark:text-gray-400">{"Software Engineer"}</p>
+            </div>
           </div>
           <Dialog onOpenChange={setOpen} open={open}>
             <DialogTrigger asChild>

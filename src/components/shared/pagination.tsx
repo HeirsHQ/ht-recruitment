@@ -1,3 +1,5 @@
+"use client";
+
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
@@ -5,15 +7,23 @@ import { Button } from "../ui/button";
 
 interface Props {
   onPageChange: (page: number) => void;
-  onPageSizeChange: (pageSize: number) => void;
   page: number;
   pageSize: number;
   total: number;
+  onPageSizeChange?: (pageSize: number) => void;
+  showPageSizeChange?: boolean;
 }
 
 const ROWS_PER_PAGE = ["10", "15", "20", "25", "30"];
 
-export const Pagination = ({ onPageChange, onPageSizeChange, page, pageSize, total }: Props) => {
+export const Pagination = ({
+  onPageChange,
+  page,
+  pageSize,
+  total,
+  onPageSizeChange,
+  showPageSizeChange = false,
+}: Props) => {
   const totalPages = Math.ceil(total / pageSize);
   const start = page * pageSize + 1;
   const end = Math.min((page + 1) * pageSize, total);
@@ -27,21 +37,23 @@ export const Pagination = ({ onPageChange, onPageSizeChange, page, pageSize, tot
         {start}-{end} of {total} rows
       </p>
       <div className="flex items-center gap-x-8">
-        <div className="flex items-center gap-x-3">
-          <p className="text-gray-500">Rows per page</p>
-          <Select onValueChange={(value) => onPageSizeChange(Number(value))} value={pageSize.toString()}>
-            <SelectTrigger className="w-20">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ROWS_PER_PAGE.map((row) => (
-                <SelectItem key={row} value={row}>
-                  {row}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {showPageSizeChange && (
+          <div className="flex items-center gap-x-3">
+            <p className="text-gray-500">Rows per page</p>
+            <Select onValueChange={(value) => onPageSizeChange?.(Number(value))} value={pageSize.toString()}>
+              <SelectTrigger className="w-20">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ROWS_PER_PAGE.map((row) => (
+                  <SelectItem key={row} value={row}>
+                    {row}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <div className="flex items-center gap-x-4">
           <p className="text-gray-500">
             Page {page + 1} of {totalPages}

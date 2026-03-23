@@ -1,3 +1,4 @@
+export * from "./breadcrumb";
 export * from "./data-table";
 export * from "./error-boundary";
 export * from "./header";

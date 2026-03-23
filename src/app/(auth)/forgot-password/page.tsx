@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { Lock } from "lucide-react";
@@ -47,62 +48,78 @@ const Page = () => {
         </div>
       </div>
 
-      {step === "email" && (
-        <>
-          <div className="space-y-1.5 text-center">
-            <p className="text-3xl font-semibold">Forgot your password?</p>
-            <p className="text-sm text-gray-600">
-              Enter your email address and we&apos;ll send you password reset instructions.
-            </p>
-          </div>
-          <form className="w-full space-y-4" onSubmit={handleSendCode}>
-            <div className="w-full space-y-3">
-              <Label htmlFor="email">Work Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (emailError) setEmailError("");
-                }}
-                required
-                aria-invalid={!!emailError}
-              />
-              {emailError && <p className="text-xs text-red-500">{emailError}</p>}
-            </div>
-            <Button className="w-full" type="submit">
-              Send Code
-            </Button>
-          </form>
-        </>
-      )}
-
-      {step === "otp" && (
-        <>
-          <div className="space-y-1.5 text-center">
-            <p className="text-3xl font-semibold">Check your email</p>
-            <p className="text-sm text-gray-600">
-              We sent a 6-digit code to <span className="font-medium text-black">{email}</span>. Enter it below to
-              continue.
-            </p>
-          </div>
-          <form className="w-full space-y-4" onSubmit={handleVerifyOtp}>
-            <OtpInput value={otp} onChange={setOtp} />
-            <Button className="w-full" type="submit" disabled={otp.length < 6}>
-              Continue
-            </Button>
-          </form>
-          <button
-            type="button"
-            className="cursor-pointer text-sm text-gray-600 hover:underline"
-            onClick={() => console.log("resend")}
+      <AnimatePresence mode="wait">
+        {step === "email" && (
+          <motion.div
+            key="email"
+            className="flex w-full flex-col items-center gap-y-6"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.3 }}
           >
-            Didn&apos;t receive a code? <span className="font-medium text-black">Resend</span>
-          </button>
-        </>
-      )}
+            <div className="space-y-1.5 text-center">
+              <p className="text-3xl font-semibold">Forgot your password?</p>
+              <p className="text-sm text-gray-600">
+                Enter your email address and we&apos;ll send you password reset instructions.
+              </p>
+            </div>
+            <form className="w-full space-y-4" onSubmit={handleSendCode}>
+              <div className="w-full space-y-3">
+                <Label htmlFor="email">Work Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (emailError) setEmailError("");
+                  }}
+                  required
+                  aria-invalid={!!emailError}
+                />
+                {emailError && <p className="text-xs text-red-500">{emailError}</p>}
+              </div>
+              <Button className="w-full" type="submit">
+                Send Code
+              </Button>
+            </form>
+          </motion.div>
+        )}
+
+        {step === "otp" && (
+          <motion.div
+            key="otp"
+            className="flex w-full flex-col items-center gap-y-6"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="space-y-1.5 text-center">
+              <p className="text-3xl font-semibold">Check your email</p>
+              <p className="text-sm text-gray-600">
+                We sent a 6-digit code to <span className="font-medium text-black">{email}</span>. Enter it below to
+                continue.
+              </p>
+            </div>
+            <form className="w-full space-y-4" onSubmit={handleVerifyOtp}>
+              <OtpInput value={otp} onChange={setOtp} />
+              <Button className="w-full" type="submit" disabled={otp.length < 6}>
+                Continue
+              </Button>
+            </form>
+            <button
+              type="button"
+              className="cursor-pointer text-sm text-gray-600 hover:underline"
+              onClick={() => console.log("resend")}
+            >
+              Didn&apos;t receive a code? <span className="font-medium text-black">Resend</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

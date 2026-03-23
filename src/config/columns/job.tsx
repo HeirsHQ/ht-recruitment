@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { CircleCheck, Clock, Eye, MoreVertical, Pencil, Trash2, XCircle } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Eye, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
+import Link from "next/link";
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import type { Job, JobStatus } from "@/types/job";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -16,30 +20,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Job } from "@/types/job";
-import { cn } from "@/lib";
-
-const employmentTypeLabel: Record<string, string> = {
-  "full-time": "Full-time",
-  "part-time": "Part-time",
-  contract: "Contract",
-  internship: "Internship",
-};
-
-const experienceLevelLabel: Record<string, string> = {
-  entry: "Entry",
-  mid: "Mid",
-  senior: "Senior",
-  executive: "Executive",
-};
-
-// ---------------------------------------------------------------------------
-// Actions cell component
-// ---------------------------------------------------------------------------
 
 function JobActions({ job }: { job: Job }) {
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -54,7 +34,7 @@ function JobActions({ job }: { job: Job }) {
             <MoreVertical className="size-5" />
           </button>
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-40 p-1">
+        <PopoverContent align="end" className="w-56 p-1">
           <div className="flex w-full flex-col">
             <Link
               href={`/jobs/${job.id}`}
@@ -62,7 +42,7 @@ function JobActions({ job }: { job: Job }) {
               onClick={() => setPopoverOpen(false)}
             >
               <Eye className="size-4 text-gray-500" />
-              View
+              View Details
             </Link>
             <button
               className="flex w-full items-center gap-x-2 rounded-md px-2.5 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700"
@@ -87,8 +67,6 @@ function JobActions({ job }: { job: Job }) {
           </div>
         </PopoverContent>
       </Popover>
-
-      {/* Edit dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -115,7 +93,7 @@ function JobActions({ job }: { job: Job }) {
               </div>
               <div className="grid gap-1.5">
                 <label className="text-sm font-medium">Type</label>
-                <Select defaultValue={job.employmentType}>
+                <Select defaultValue={job.jobType}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -123,7 +101,6 @@ function JobActions({ job }: { job: Job }) {
                     <SelectItem value="full-time">Full-time</SelectItem>
                     <SelectItem value="part-time">Part-time</SelectItem>
                     <SelectItem value="contract">Contract</SelectItem>
-                    <SelectItem value="internship">Internship</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -131,15 +108,19 @@ function JobActions({ job }: { job: Job }) {
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
                 <label className="text-sm font-medium">Level</label>
-                <Select defaultValue={job.experienceLevel}>
+                <Select defaultValue={job.experienceType}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="entry">Entry</SelectItem>
-                    <SelectItem value="mid">Mid</SelectItem>
-                    <SelectItem value="senior">Senior</SelectItem>
-                    <SelectItem value="executive">Executive</SelectItem>
+                    <SelectItem value="internship">Internship</SelectItem>
+                    <SelectItem value="entry-level">Entry</SelectItem>
+                    <SelectItem value="associate-level">Associate</SelectItem>
+                    <SelectItem value="mid-level">Mid</SelectItem>
+                    <SelectItem value="senior-level">Senior</SelectItem>
+                    <SelectItem value="management-leval">Management</SelectItem>
+                    <SelectItem value="director-leval">Director</SelectItem>
+                    <SelectItem value="executive-leval">Executive</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -164,8 +145,6 @@ function JobActions({ job }: { job: Job }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Delete confirmation dialog */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
@@ -198,65 +177,64 @@ function JobActions({ job }: { job: Job }) {
 // ---------------------------------------------------------------------------
 // Column definitions
 // ---------------------------------------------------------------------------
+const getStatusBadge = (status: JobStatus) => {
+  function icon(status: JobStatus) {
+    switch (status) {
+      case "cancelled":
+      case "closed":
+        return <XCircle className="size-3 text-red-600" />;
+      case "in progress":
+      case "pending":
+        return <Clock className="size-3 text-yellow-600" />;
+      case "open":
+        return <CircleCheck className="size-3 text-green-600" />;
+    }
+  }
+  return (
+    <div className="flex w-fit items-center gap-x-1 rounded-3xl bg-gray-100 px-2 py-1 text-xs font-medium text-black capitalize">
+      {icon(status)}
+      {status}
+    </div>
+  );
+};
 
 export const columns: ColumnDef<Job>[] = [
   {
     accessorKey: "title",
-    header: "Title",
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-medium">{row.original.title}</span>
-        {row.original.company && <span className="text-xs text-gray-500">{row.original.company}</span>}
-      </div>
-    ),
+    header: "Role",
+  },
+  {
+    accessorKey: "company",
+    header: "Company",
   },
   {
     accessorKey: "location",
     header: "Location",
     cell: ({ row }) => (
-      <div className="flex items-center gap-x-1.5">
-        <span>{row.original.location ?? "—"}</span>
-        {row.original.remote && (
-          <Badge className="bg-blue-50 text-xs text-blue-700 dark:bg-blue-950 dark:text-blue-300">Remote</Badge>
-        )}
-      </div>
+      <span className="capitalize">
+        {row.original.location ?? "—"} ({row.original.workType})
+      </span>
     ),
   },
   {
-    accessorKey: "employmentType",
+    accessorKey: "experienceType",
     header: "Type",
-    cell: ({ row }) => employmentTypeLabel[row.original.employmentType] ?? row.original.employmentType,
+    cell: ({ row }) => <span className="capitalize">{row.original.experienceType.replace("-", " ")}</span>,
   },
   {
-    accessorKey: "experienceLevel",
-    header: "Level",
-    cell: ({ row }) => experienceLevelLabel[row.original.experienceLevel] ?? row.original.experienceLevel,
+    id: "applicants",
+    header: "Applicants",
+    cell: ({ row }) => <span>{row.original.applications?.length}</span>,
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
-      <Badge
-        className={cn(
-          "text-xs uppercase",
-          row.original.status === "open"
-            ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"
-            : "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
-        )}
-      >
-        {row.original.status}
-      </Badge>
-    ),
+    cell: ({ row }) => getStatusBadge(row.original.status),
   },
   {
     accessorKey: "createdAt",
     header: "Posted",
     cell: ({ row }) => format(new Date(row.original.createdAt), "dd MMM yyyy"),
-  },
-  {
-    accessorKey: "openUntil",
-    header: "Deadline",
-    cell: ({ row }) => format(new Date(row.original.openUntil), "dd MMM yyyy"),
   },
   {
     id: "actions",

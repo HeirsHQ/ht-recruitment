@@ -73,7 +73,7 @@ const Page = () => {
     currentStageName: string;
   } | null>(null);
 
-  const workflowCandidates = useMemo(() => getCandidatesForWorkflow(id), [getCandidatesForWorkflow, id, candidates]);
+  const workflowCandidates = useMemo(() => getCandidatesForWorkflow(id), [getCandidatesForWorkflow, id]);
 
   const workflowApprovals = useMemo(() => approvalRequests.filter((r) => r.workflowId === id), [approvalRequests, id]);
 

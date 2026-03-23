@@ -5,6 +5,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAx
 import { format, isWithinInterval, startOfWeek, subDays } from "date-fns";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -99,6 +100,21 @@ interface DrillDown {
 }
 
 const INITIAL_DRILL_DOWN: DrillDown = { open: false, title: "", description: "", candidates: [] };
+
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } },
+} as const;
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+};
+
+const fadeIn = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
+};
 
 const Page = () => {
   const [customRange, setCustomRange] = useState<DateRange>({ from: null, to: null });
@@ -350,7 +366,12 @@ const Page = () => {
         }
       `}</style>
       <div id="reports-printable" className="space-y-6 p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <motion.div
+          className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4 }}
+        >
           <div>
             <h1 className="text-2xl font-semibold">Reports</h1>
             <p className="text-sm text-gray-500">Analytics and insights for your hiring pipeline</p>
@@ -399,20 +420,35 @@ const Page = () => {
               Print
             </Button>
           </div>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        </motion.div>
+        <motion.div
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          variants={container}
+          initial="hidden"
+          animate="show"
+        >
           {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col justify-between rounded-xl border p-4">
+            <motion.div
+              key={stat.label}
+              className="flex flex-col justify-between rounded-xl border p-4"
+              variants={item}
+            >
               <div className="flex items-center justify-between">
                 <p className="text-sm text-gray-500">{stat.label}</p>
                 <stat.icon className={`size-5 ${stat.iconColor}`} />
               </div>
               <p className="mt-2 text-2xl font-bold">{stat.value}</p>
               <p className="mt-1 text-xs text-gray-400">{stat.subtitle}</p>
-            </div>
+            </motion.div>
           ))}
-        </div>
-        <div className="space-y-4 rounded-xl border p-4">
+        </motion.div>
+        <motion.div
+          className="space-y-4 rounded-xl border p-4"
+          variants={fadeIn}
+          initial="hidden"
+          animate="show"
+          transition={{ delay: 0.3 }}
+        >
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-semibold">Applications Over Time</h3>
@@ -450,8 +486,14 @@ const Page = () => {
               </div>
             </div>
           )}
-        </div>
-        <div className="grid gap-6 lg:grid-cols-2">
+        </motion.div>
+        <motion.div
+          className="grid gap-6 lg:grid-cols-2"
+          variants={fadeIn}
+          initial="hidden"
+          animate="show"
+          transition={{ delay: 0.4 }}
+        >
           <div className="space-y-4 rounded-xl border p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -508,8 +550,14 @@ const Page = () => {
               </PieChart>
             </ChartContainer>
           </div>
-        </div>
-        <div className="grid gap-6 lg:grid-cols-2">
+        </motion.div>
+        <motion.div
+          className="grid gap-6 lg:grid-cols-2"
+          variants={fadeIn}
+          initial="hidden"
+          animate="show"
+          transition={{ delay: 0.5 }}
+        >
           <div className="space-y-4 rounded-xl border p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -562,8 +610,14 @@ const Page = () => {
               </div>
             )}
           </div>
-        </div>
-        <div className="space-y-4 rounded-xl border p-4">
+        </motion.div>
+        <motion.div
+          className="space-y-4 rounded-xl border p-4"
+          variants={fadeIn}
+          initial="hidden"
+          animate="show"
+          transition={{ delay: 0.6 }}
+        >
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-semibold">Recent Jobs</h3>
@@ -597,7 +651,7 @@ const Page = () => {
               ))}
             </TableBody>
           </Table>
-        </div>
+        </motion.div>
         <Dialog open={drillDown.open} onOpenChange={(open) => setDrillDown((d) => ({ ...d, open }))}>
           <DialogContent className="sm:max-w-4xl" showCloseButton>
             <DialogHeader>
