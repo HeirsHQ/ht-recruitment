@@ -72,7 +72,7 @@ export interface Candidate {
   experience: CandidateExperience[];
   education: CandidateEducation[];
   certifications: CandidateCertification[];
-  status: "active" | "inactive";
+  status: string;
   appliedAt: Date;
   currentStageId: string;
   previousStageId?: string;
