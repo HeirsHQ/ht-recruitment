@@ -1,11 +1,14 @@
 import { faker } from "@faker-js/faker";
 
 import type { Job, JobApplication, JobStatus, Role, User, UserStatus } from "@/types";
-import type { PipelineStageConfig } from "@/types/job";
+import type { JobTemplate, PipelineStageConfig } from "@/types/job";
 import type {
   ApprovalRequest,
   ApprovalStatus,
   Candidate,
+  CandidateCertification,
+  CandidateEducation,
+  CandidateExperience,
   StageHistoryEntry,
   WorkflowInstance,
   WorkflowTemplate,
@@ -48,16 +51,125 @@ export const MOCK_JOB_ROLES = [
   { id: "customer-support-specialist", name: "Customer Support Specialist" },
 ];
 
+const APPLICATION_STAGES: PipelineStageConfig[] = [
+  {
+    id: "pending",
+    title: "Pending",
+    color: "#f59e0b",
+    notifications: { enabled: false, recipients: [] },
+    approval: { required: false, approvers: [] },
+    workflow: { sendEmailTemplate: "" },
+  },
+  {
+    id: "rejected",
+    title: "Rejected",
+    color: "#ef4444",
+    notifications: { enabled: true, recipients: [] },
+    approval: { required: false, approvers: [] },
+    workflow: { sendEmailTemplate: "rejection" },
+  },
+  {
+    id: "interview-scheduled",
+    title: "Interview Scheduled",
+    color: "#3b82f6",
+    notifications: { enabled: true, recipients: [] },
+    approval: { required: false, approvers: [] },
+    workflow: { sendEmailTemplate: "interview-scheduled" },
+  },
+  {
+    id: "hr-interview",
+    title: "HR Interview",
+    color: "#8b5cf6",
+    notifications: { enabled: true, recipients: [] },
+    approval: { required: false, approvers: [] },
+    workflow: { sendEmailTemplate: "hr-interview" },
+  },
+  {
+    id: "accepted",
+    title: "Accepted",
+    color: "#10b981",
+    notifications: { enabled: true, recipients: [] },
+    approval: { required: false, approvers: [] },
+    workflow: { sendEmailTemplate: "offer-letter" },
+  },
+];
+
+const SKILL_POOL = [
+  "JavaScript",
+  "TypeScript",
+  "React",
+  "Next.js",
+  "Vue.js",
+  "Angular",
+  "Node.js",
+  "Python",
+  "Django",
+  "Flask",
+  "Java",
+  "Spring Boot",
+  "Go",
+  "Rust",
+  "C#",
+  ".NET",
+  "SQL",
+  "PostgreSQL",
+  "MongoDB",
+  "Redis",
+  "GraphQL",
+  "REST APIs",
+  "Docker",
+  "Kubernetes",
+  "AWS",
+  "GCP",
+  "Azure",
+  "CI/CD",
+  "Terraform",
+  "Git",
+  "Linux",
+  "Agile",
+  "Scrum",
+  "TDD",
+  "Microservices",
+  "Figma",
+  "Sketch",
+  "Adobe XD",
+  "UI/UX Design",
+  "Prototyping",
+  "User Research",
+  "Data Analysis",
+  "Machine Learning",
+  "Pandas",
+  "TensorFlow",
+  "Power BI",
+  "Tableau",
+  "Project Management",
+  "Jira",
+  "Confluence",
+  "Stakeholder Management",
+  "Communication",
+  "Leadership",
+  "Problem Solving",
+  "Critical Thinking",
+  "Sales Strategy",
+  "CRM",
+  "Negotiation",
+  "Account Management",
+  "Recruitment",
+  "Talent Acquisition",
+  "HR Compliance",
+  "Onboarding",
+  "Financial Modeling",
+  "Excel",
+  "SAP",
+  "QuickBooks",
+  "Budgeting",
+];
+
 function createMockApplications(jobId: string): JobApplication[] {
   const count = faker.number.int({ min: 10, max: 20 });
   return Array.from({ length: count }, () => {
-    const applicantStatus = faker.helpers.arrayElement([
-      "pending",
-      "accepted",
-      "hr-interview",
-      "interview-scheduled",
-      "rejected",
-    ]);
+    const stage = faker.helpers.arrayElement(APPLICATION_STAGES);
+    const skillCount = faker.number.int({ min: 2, max: 6 });
     return {
       id: faker.string.uuid(),
       jobId,
@@ -68,16 +180,34 @@ function createMockApplications(jobId: string): JobApplication[] {
         resume: faker.internet.url(),
         coverLetter: faker.datatype.boolean() ? faker.lorem.paragraph() : undefined,
         appliedAt: faker.date.recent(),
+        skills: faker.helpers.arrayElements(SKILL_POOL, skillCount),
       },
-      status: applicantStatus,
+      status: stage.id,
+      workflow: stage,
+      matchScore: faker.number.int({ min: 0, max: 100 }),
+      source: faker.helpers.arrayElement([
+        "LinkedIn",
+        "Referral",
+        "Job Board",
+        "Company Website",
+        "Recruiter",
+        "Career Fair",
+      ]),
+      appliedAt: faker.date.recent(),
       createdAt: faker.date.recent(),
       updatedAt: faker.date.recent(),
     };
   });
 }
 
-export const MOCK_JOBS: Job[] = Array.from({ length: 16 }, () => {
-  const status: JobStatus = faker.helpers.arrayElement(["open", "closed", "cancelled", "pending", "in progress"]);
+export const MOCK_JOBS: Job[] = Array.from({ length: 20 }, () => {
+  const status: JobStatus = faker.helpers.weightedArrayElement([
+    { value: "open", weight: 5 },
+    { value: "closed", weight: 1 },
+    { value: "cancelled", weight: 1 },
+    { value: "pending", weight: 1 },
+    { value: "in progress", weight: 1 },
+  ]);
   const jobId = faker.string.uuid();
 
   return {
@@ -147,6 +277,20 @@ export const MOCK_USERS: User[] = Array.from({ length: 15 }, () => {
     isActive: status === "active",
     avatar: faker.image.avatar(),
     lastLoginAt: status === "active" ? faker.date.recent() : undefined,
+  };
+});
+
+// ---------------------------------------------------------------------------
+// Job Templates Templates
+// ---------------------------------------------------------------------------
+
+export const MOCK_JOB_TEMPLATES: JobTemplate[] = Array.from({ length: 5 }, () => {
+  const templateId = faker.string.uuid();
+  return {
+    id: templateId,
+    title: faker.person.jobTitle(),
+    jobType: faker.helpers.arrayElement(["full-time", "part-time", "contract"]),
+    department: faker.helpers.arrayElement(MOCK_DEPARTMENTS).name,
   };
 });
 
@@ -296,6 +440,77 @@ export const MOCK_WORKFLOWS: WorkflowTemplate[] = [
 
 const CANDIDATE_SOURCES = ["LinkedIn", "Referral", "Job Board", "Company Website", "Recruiter", "Career Fair"];
 
+const DEGREE_OPTIONS = [
+  "BS Computer Science",
+  "MS Computer Science",
+  "BA Business Administration",
+  "BS Information Technology",
+  "MBA",
+  "BS Data Science",
+  "MS Software Engineering",
+  "BA Communications",
+  "BS Electrical Engineering",
+  "BS Mathematics",
+];
+
+const INSTITUTION_OPTIONS = [
+  "Stanford University",
+  "MIT",
+  "University of Lagos",
+  "Harvard University",
+  "University of Oxford",
+  "Carnegie Mellon University",
+  "University of Ibadan",
+  "Georgia Tech",
+  "Covenant University",
+  "University of Cape Town",
+];
+
+const CERTIFICATION_OPTIONS = [
+  "AWS Certified Developer",
+  "Google Cloud Professional",
+  "PMP Certification",
+  "Scrum Master (CSM)",
+  "Certified Kubernetes Administrator",
+  "Azure Solutions Architect",
+  "CISSP",
+  "CompTIA Security+",
+  "Terraform Associate",
+  "HubSpot Inbound Marketing",
+];
+
+function createCandidateExperience(): CandidateExperience[] {
+  const count = faker.number.int({ min: 1, max: 3 });
+  return Array.from({ length: count }, () => {
+    const startYear = faker.number.int({ min: 2016, max: 2023 });
+    const isCurrent = faker.datatype.boolean();
+    return {
+      title: faker.person.jobTitle(),
+      company: faker.company.name(),
+      startDate: `${startYear}`,
+      endDate: isCurrent ? "Present" : `${faker.number.int({ min: startYear + 1, max: 2025 })}`,
+      description: faker.lorem.sentence(),
+    };
+  });
+}
+
+function createCandidateEducation(): CandidateEducation[] {
+  const count = faker.number.int({ min: 1, max: 2 });
+  return Array.from({ length: count }, () => ({
+    degree: faker.helpers.arrayElement(DEGREE_OPTIONS),
+    institution: faker.helpers.arrayElement(INSTITUTION_OPTIONS),
+    year: faker.number.int({ min: 2010, max: 2024 }),
+  }));
+}
+
+function createCandidateCertifications(): CandidateCertification[] {
+  const count = faker.number.int({ min: 0, max: 3 });
+  return Array.from({ length: count }, () => ({
+    name: faker.helpers.arrayElement(CERTIFICATION_OPTIONS),
+    year: faker.number.int({ min: 2018, max: 2025 }),
+  }));
+}
+
 function createMockCandidates(): {
   candidates: Candidate[];
   instances: WorkflowInstance[];
@@ -364,17 +579,26 @@ function createMockCandidates(): {
         name: faker.person.fullName(),
         email: faker.internet.email(),
         phone: faker.phone.number(),
+        location: `${faker.location.city()}, ${faker.location.countryCode()}`,
+        summary: faker.lorem.paragraph(3),
         resume: faker.internet.url(),
         coverLetter: faker.datatype.boolean() ? faker.lorem.paragraphs(2) : undefined,
         avatar: faker.image.avatar(),
+        skills: faker.helpers.arrayElements(SKILL_POOL, faker.number.int({ min: 3, max: 6 })),
+        experience: createCandidateExperience(),
+        education: createCandidateEducation(),
+        certifications: createCandidateCertifications(),
+        status: faker.helpers.arrayElement(["active", "inactive"]),
         appliedAt,
         currentStageId: previousStage?.id ?? "applied",
         previousStageId: stageIndex > 1 ? workflow.stages[stageIndex - 2]?.id : undefined,
         workflowId: workflow.id,
         jobId: job.id,
+        job,
         applicationId,
         approvalStatus,
         activeApprovalId,
+        matchScore: faker.number.int({ min: 0, max: 100 }),
         tags: [faker.lorem.word(), faker.lorem.word()],
         rating: faker.number.int({ min: 1, max: 5 }),
         source: faker.helpers.arrayElement(CANDIDATE_SOURCES),
@@ -385,15 +609,24 @@ function createMockCandidates(): {
         name: faker.person.fullName(),
         email: faker.internet.email(),
         phone: faker.phone.number(),
+        location: `${faker.location.city()}, ${faker.location.countryCode()}`,
+        summary: faker.lorem.paragraph(3),
         resume: faker.internet.url(),
         coverLetter: faker.datatype.boolean() ? faker.lorem.paragraphs(2) : undefined,
         avatar: faker.image.avatar(),
+        skills: faker.helpers.arrayElements(SKILL_POOL, faker.number.int({ min: 3, max: 6 })),
+        experience: createCandidateExperience(),
+        education: createCandidateEducation(),
+        certifications: createCandidateCertifications(),
+        status: faker.helpers.arrayElement(["active", "inactive"]),
         appliedAt,
         currentStageId: currentStage.id,
         previousStageId: previousStage?.id,
         workflowId: workflow.id,
         jobId: job.id,
+        job,
         applicationId,
+        matchScore: faker.number.int({ min: 0, max: 100 }),
         tags: [faker.lorem.word(), faker.lorem.word()],
         rating: faker.number.int({ min: 1, max: 5 }),
         source: faker.helpers.arrayElement(CANDIDATE_SOURCES),

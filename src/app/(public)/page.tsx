@@ -63,7 +63,8 @@ const Page = () => {
   };
 
   const filtered = useMemo(() => {
-    let jobs = MOCK_JOBS.filter((job) => job.status === "open");
+    // let jobs = MOCK_JOBS.filter((job) => job.status === "open");
+    let jobs = MOCK_JOBS;
     if (search.trim()) {
       const query = search.toLowerCase();
       jobs = jobs.filter(
@@ -233,7 +234,7 @@ const Page = () => {
                     {VIEWS.map((view) => (
                       <button
                         className={cn(
-                          "grid size-10 shrink-0 place-items-center rounded-md transition-all duration-300",
+                          "grid aspect-[1.3/1] w-10 shrink-0 place-items-center rounded-md transition-all duration-300",
                           layout === view.value ? "bg-white" : "",
                         )}
                         key={view.value}

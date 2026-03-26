@@ -24,7 +24,7 @@ export const ROUTES: RouteConfig[] = [
   },
   {
     href: "/workflows",
-    name: "Workflows",
+    name: "Pipeline",
     icon: Workflow,
   },
   {

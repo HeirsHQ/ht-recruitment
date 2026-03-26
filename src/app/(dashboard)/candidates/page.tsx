@@ -1,18 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { CheckCircle, Clock, ListFilter, Users, UserCheck } from "lucide-react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DataTable, Pagination } from "@/components/shared";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { createCandidateColumns } from "@/config/columns/candidate";
+import { DataTable, Pagination } from "@/components/shared";
 import { useWorkflowStore } from "@/store/core";
+import { Button } from "@/components/ui/button";
 import { paginate } from "@/lib";
 
-type CandidateFilter = "all" | "active" | "pending" | "hired";
+type Params = {
+  page: number;
+  pageSize: number;
+  status: string;
+};
 
-const initialValues = { page: 0, pageSize: 10 };
+const initialParams: Params = { page: 0, pageSize: 10, status: "" };
 
 const container = {
   hidden: { opacity: 0 },
@@ -25,12 +30,12 @@ const item = {
 };
 
 const Page = () => {
-  const { candidates, workflows } = useWorkflowStore();
-  const [statusFilter, setStatusFilter] = useState<CandidateFilter>("all");
-  const [pagination, setPagination] = useState(initialValues);
-  const { page, pageSize } = pagination;
+  const { candidates } = useWorkflowStore();
+  const [params, setParams] = useState(initialParams);
 
-  const columns = useMemo(() => createCandidateColumns(workflows), [workflows]);
+  const handleParamChange = <K extends keyof Params>(field: K, value: Params[K]) => {
+    setParams((params) => ({ ...params, [field]: value }));
+  };
 
   const stats = useMemo(() => {
     const active = candidates.filter((c) => c.currentStageId !== "hired" && c.currentStageId !== "rejected").length;
@@ -69,22 +74,14 @@ const Page = () => {
     ];
   }, [candidates]);
 
-  const filteredCandidates = useMemo(() => {
-    switch (statusFilter) {
-      case "active":
-        return candidates.filter((c) => c.currentStageId !== "hired" && c.currentStageId !== "rejected");
-      case "pending":
-        return candidates.filter((c) => c.approvalStatus === "pending");
-      case "hired":
-        return candidates.filter((c) => c.currentStageId === "hired");
-      default:
-        return candidates;
-    }
-  }, [candidates, statusFilter]);
+  const filtered = useMemo(() => {
+    const result = candidates;
+    return result;
+  }, [candidates]);
 
   const paginated = useMemo(
-    () => paginate(filteredCandidates, page, pageSize, filteredCandidates.length),
-    [filteredCandidates, page, pageSize],
+    () => paginate(filtered, params.page, params.pageSize, filtered.length),
+    [filtered, params],
   );
 
   return (
@@ -93,7 +90,6 @@ const Page = () => {
         <h1 className="text-2xl font-semibold">Candidates</h1>
         <p className="text-sm text-gray-500">Track all candidates across hiring pipelines</p>
       </motion.div>
-
       <motion.div
         className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
         variants={container}
@@ -111,40 +107,31 @@ const Page = () => {
           </motion.div>
         ))}
       </motion.div>
-
       <motion.div
         className="w-full space-y-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
-        <div className="flex items-center gap-x-2">
-          <ListFilter className="size-4 text-gray-500" />
-          <Select
-            value={statusFilter}
-            onValueChange={(v) => {
-              setStatusFilter(v as CandidateFilter);
-              setPagination((p) => ({ ...p, page: 0 }));
-            }}
-          >
-            <SelectTrigger className="w-44">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Candidates</SelectItem>
-              <SelectItem value="active">Active in Pipeline</SelectItem>
-              <SelectItem value="pending">Pending Approval</SelectItem>
-              <SelectItem value="hired">Hired</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex items-center justify-end">
+          <div className="flex items-center gap-x-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button className="w-37.5" size="sm" variant="outline">
+                  <ListFilter className="size-4" /> Filter
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className=""></PopoverContent>
+            </Popover>
+          </div>
         </div>
-        <DataTable columns={columns} data={paginated} />
+        <DataTable columns={createCandidateColumns} data={paginated} />
         <Pagination
-          onPageChange={(p) => setPagination({ ...pagination, page: p })}
-          onPageSizeChange={(ps) => setPagination({ ...pagination, pageSize: ps })}
-          page={page}
-          pageSize={pageSize}
-          total={filteredCandidates.length}
+          onPageChange={(page) => handleParamChange("page", page)}
+          onPageSizeChange={(pageSize) => handleParamChange("pageSize", pageSize)}
+          page={params.page}
+          pageSize={params.pageSize}
+          total={filtered.length}
         />
       </motion.div>
     </div>

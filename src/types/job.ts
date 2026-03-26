@@ -44,6 +44,10 @@ export interface JobApplication {
   jobId: string;
   applicant: JobApplicant;
   status: string;
+  workflow: PipelineStageConfig;
+  matchScore: number;
+  source: string;
+  appliedAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,6 +59,7 @@ export interface JobApplicant {
   resume: string;
   coverLetter?: string;
   appliedAt: Date;
+  skills: string[];
 }
 
 export interface PipelineStageConfig {
@@ -106,4 +111,11 @@ export interface CreateJobDto {
   company?: string;
   requirements?: string[];
   benefits?: string[];
+}
+
+export interface JobTemplate {
+  id: string;
+  title: string;
+  department: string;
+  jobType: JobType;
 }

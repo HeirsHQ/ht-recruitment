@@ -1,4 +1,4 @@
-import type { PipelineStageConfig } from "./job";
+import type { Job, PipelineStageConfig } from "./job";
 
 export interface WorkflowTemplate {
   id: string;
@@ -38,19 +38,47 @@ export interface ApprovalRequest {
   resolvedBy?: string;
 }
 
+export interface CandidateExperience {
+  title: string;
+  company: string;
+  startDate: string;
+  endDate?: string;
+  description: string;
+}
+
+export interface CandidateEducation {
+  degree: string;
+  institution: string;
+  year: number;
+}
+
+export interface CandidateCertification {
+  name: string;
+  year: number;
+}
+
 export interface Candidate {
   id: string;
   name: string;
   email: string;
   phone?: string;
+  location?: string;
+  summary?: string;
   resume: string;
+  matchScore: number;
   coverLetter?: string;
   avatar?: string;
+  skills: string[];
+  experience: CandidateExperience[];
+  education: CandidateEducation[];
+  certifications: CandidateCertification[];
+  status: "active" | "inactive";
   appliedAt: Date;
   currentStageId: string;
   previousStageId?: string;
   workflowId?: string;
   jobId: string;
+  job: Job;
   applicationId: string;
   approvalStatus?: ApprovalStatus;
   activeApprovalId?: string;
