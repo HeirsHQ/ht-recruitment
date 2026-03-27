@@ -206,6 +206,7 @@ export const columns: ColumnDef<Job>[] = [
   {
     accessorKey: "company",
     header: "Company",
+    cell: ({ row }) => <span>{row.original.company?.name ?? "—"}</span>,
   },
   {
     accessorKey: "location",

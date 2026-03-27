@@ -1,19 +1,20 @@
 "use client";
 
 import { Briefcase, CheckCircle, LayoutGrid, LayoutList, ListFilter, NotepadText, Plus, XCircle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import type { JobStatus, JobType, WorkType } from "@/types/job";
-import { DataTable, Pagination } from "@/components/shared";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { DataTable, Pagination, TabPanel } from "@/components/shared";
+import type { Job, JobStatus, JobType, WorkType } from "@/types/job";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { columns } from "@/config/columns/job";
-import { JobCard } from "@/components/jobs";
+import { JobKanban } from "@/components/jobs";
 import { cn, paginate } from "@/lib";
+import { toast } from "sonner";
 
 import { MOCK_JOBS } from "@/__mock__/database";
 
@@ -56,6 +57,7 @@ const initialFilters = { status: "", jobType: "", workType: "" };
 
 const Page = () => {
   const [layout, setLayout] = useState("list");
+  const [jobs, setJobs] = useState<Job[]>(MOCK_JOBS);
 
   const initialParams = {
     page: 0,
@@ -84,8 +86,14 @@ const Page = () => {
     setParams((prev) => ({ ...prev, ...initialFilters, page: 0 }));
   };
 
+  const handleJobStatusChange = useCallback((jobId: string, newStatus: JobStatus) => {
+    setJobs((prev) =>
+      prev.map((job) => (job.id === jobId ? { ...job, status: newStatus, updatedAt: new Date() } : job)),
+    );
+    toast.success(`Job moved to "${newStatus}"`);
+  }, []);
+
   const stats = useMemo(() => {
-    const jobs = MOCK_JOBS;
     const open = jobs.filter((j) => j.status === "open").length;
     const closed = jobs.filter((j) => j.status === "closed").length;
     const applications = jobs.reduce((sum, j) => sum + (j.applications?.length ?? 0), 0);
@@ -96,16 +104,16 @@ const Page = () => {
       { label: "Closed", value: closed, icon: XCircle },
       { label: "Applications", value: applications, icon: NotepadText },
     ];
-  }, []);
+  }, [jobs]);
 
   const filtered = useMemo(() => {
-    let result = MOCK_JOBS;
+    let result = jobs;
     if (params.search) {
       const query = params.search.toLowerCase();
       result = result.filter(
         (job) =>
           job.title.toLowerCase().includes(query) ||
-          job.company?.toLowerCase().includes(query) ||
+          job.company?.name?.toLowerCase().includes(query) ||
           job.location?.toLowerCase().includes(query) ||
           job.role?.toLowerCase().includes(query),
       );
@@ -114,7 +122,7 @@ const Page = () => {
     if (params.status) result = result.filter((job) => job.status === params.status);
     if (params.workType) result = result.filter((job) => job.workType === params.workType);
     return result;
-  }, [params]);
+  }, [jobs, params]);
 
   const paginated = useMemo(
     () => paginate(filtered, params.page, params.pageSize, filtered.length),
@@ -258,29 +266,22 @@ const Page = () => {
           </div>
         </div>
         {layout === "list" ? (
-          <DataTable columns={columns} data={paginated} />
+          <>
+            <TabPanel selected={""} value={""}>
+              <DataTable columns={columns} data={paginated} />
+            </TabPanel>
+            <Pagination
+              onPageChange={(value) => handleParamsChange("page", value)}
+              onPageSizeChange={(value) => handleParamsChange("page", value)}
+              page={params.page}
+              pageSize={params.pageSize}
+              showPageSizeChange
+              total={filtered.length}
+            />
+          </>
         ) : (
-          <motion.div
-            className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            variants={container}
-            initial="hidden"
-            animate="show"
-          >
-            {paginated.map((job) => (
-              <motion.div key={job.id} variants={item} className="h-full">
-                <JobCard job={job} />
-              </motion.div>
-            ))}
-          </motion.div>
+          <JobKanban jobs={filtered} onStatusChange={handleJobStatusChange} />
         )}
-        <Pagination
-          onPageChange={(value) => handleParamsChange("page", value)}
-          onPageSizeChange={(value) => handleParamsChange("page", value)}
-          page={params.page}
-          pageSize={params.pageSize}
-          showPageSizeChange
-          total={filtered.length}
-        />
       </motion.div>
     </div>
   );

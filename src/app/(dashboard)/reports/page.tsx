@@ -170,7 +170,7 @@ const Page = () => {
     const deptMap = new Map<string, number>();
     for (const c of hiredCandidates) {
       const job = MOCK_JOBS.find((j) => j.id === c.jobId);
-      const dept = job?.department ?? "Unknown";
+      const dept = job?.department?.name ?? "Unknown";
       deptMap.set(dept, (deptMap.get(dept) ?? 0) + 1);
     }
 
@@ -248,7 +248,7 @@ const Page = () => {
         .map((job) => ({
           id: job.id,
           title: job.title,
-          department: job.department ?? "\u2014",
+          department: job.department?.name ?? "\u2014",
           location: job.location ?? "\u2014",
           applicants: job.applications?.length ?? 0,
           status: job.status,

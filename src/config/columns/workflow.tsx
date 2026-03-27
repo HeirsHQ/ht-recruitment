@@ -36,7 +36,7 @@ function WorkflowActions({ workflow, onDelete }: { workflow: WorkflowTemplate; o
         <PopoverContent align="end" className="w-40 p-1">
           <div className="flex w-full flex-col">
             <Link
-              href={`/workflows/${workflow.id}`}
+              href={`/pipelines/${workflow.id}`}
               className="flex w-full items-center gap-x-2 rounded-md px-2.5 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700"
               onClick={() => setPopoverOpen(false)}
             >
@@ -44,7 +44,7 @@ function WorkflowActions({ workflow, onDelete }: { workflow: WorkflowTemplate; o
               View
             </Link>
             <Link
-              href={`/workflows/${workflow.id}/edit`}
+              href={`/pipelines/${workflow.id}/edit`}
               className="flex w-full items-center gap-x-2 rounded-md px-2.5 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700"
               onClick={() => setPopoverOpen(false)}
             >
@@ -112,7 +112,7 @@ export function createWorkflowColumns(onDelete?: (id: string) => void): ColumnDe
       header: "Department",
       cell: ({ row }) => (
         <Badge variant="outline" className="text-xs">
-          {row.original.department}
+          {row.original.department.name}
         </Badge>
       ),
     },

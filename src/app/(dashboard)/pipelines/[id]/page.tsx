@@ -240,7 +240,7 @@ const Page = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-x-2 text-gray-600 dark:text-gray-400">
                     <Building2 className="size-4 shrink-0" />
-                    <span>{workflow.department}</span>
+                    <span>{workflow.department.name}</span>
                   </div>
                   <div className="flex items-center gap-x-2 text-gray-600 dark:text-gray-400">
                     <User className="size-4 shrink-0" />

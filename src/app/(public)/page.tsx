@@ -70,13 +70,13 @@ const Page = () => {
       jobs = jobs.filter(
         (job) =>
           job.title.toLowerCase().includes(query) ||
-          job.company?.toLowerCase().includes(query) ||
+          job.company?.name?.toLowerCase().includes(query) ||
           job.location?.toLowerCase().includes(query) ||
           job.role?.toLowerCase().includes(query),
       );
     }
     if (department !== "all") {
-      jobs = jobs.filter((job) => job.department?.toLowerCase() === department.toLowerCase());
+      jobs = jobs.filter((job) => job.department?.id === department);
     }
     if (filters.workType.length > 0) {
       jobs = jobs.filter((job) => filters.workType.includes(job.workType));

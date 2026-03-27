@@ -15,11 +15,13 @@ import { ROUTES } from "@/config";
 import { cn } from "@/lib";
 
 export const Sidebar = () => {
-  const { isCollapsed } = useGlobalStore();
+  const { isCollapsed, theme } = useGlobalStore();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
   const isOnPath = (href: string) => pathname.startsWith(href);
+
+  const image = theme === "dark" ? "/assets/images/converge-logo.png" : "/assets/images/converge-logo-black.png";
 
   return (
     <motion.aside
@@ -29,7 +31,7 @@ export const Sidebar = () => {
     >
       <div className="flex h-19 w-full items-center justify-center">
         <div className={cn("relative", isCollapsed ? "hidden" : "aspect-[2.7/1] w-25")}>
-          <Image alt="converge" className="object-contain" fill sizes="100%" src="/assets/images/converge-logo.png" />
+          <Image alt="converge" className="object-contain" fill sizes="100%" src={image} />
         </div>
       </div>
       <div className="flex h-[calc(100%-76px)] w-full flex-col justify-between">

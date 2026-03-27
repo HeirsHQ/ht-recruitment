@@ -86,7 +86,7 @@ export const JobCard = ({ job }: Props) => {
               </PopoverContent>
             </Popover>
           </div>
-          <p className="text-xs text-gray-500">{job.company}</p>
+          <p className="text-xs text-gray-500">{job.company?.name}</p>
           <div className="flex items-center gap-x-1.5 text-xs text-gray-500">
             <MapPin className="size-3.5 shrink-0" />
             <span className="truncate">

@@ -1,26 +1,13 @@
 export type UserStatus = "active" | "inactive";
 
 export interface User {
-  id: number;
-  email: string;
-  password: string;
-  name: string;
-  role: Role;
-  createdAt: Date;
-  updatedAt: Date;
-  isActive: boolean;
-  avatar?: string;
-  lastLoginAt?: Date;
-}
-
-export interface Role {
   id: string;
-  name: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  roles: string[];
   permissions: string[];
-  description?: string;
-  isActive: boolean;
+  lastLogin: Date;
   createdAt: Date;
-  updatedAt: Date;
-  createdBy?: string;
-  updatedBy?: string;
+  companies: string[];
 }

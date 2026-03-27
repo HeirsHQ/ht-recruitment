@@ -49,7 +49,7 @@ export const Template = ({ templates }: Props) => {
                 <div className="text-left">
                   <p className="text-sm font-medium">{template.title}</p>
                   <div className="flex items-center gap-x-3">
-                    <p className="text-sm text-gray-600">{template.department}</p>
+                    <p className="text-sm text-gray-600">{template.department.name}</p>
                     <span className="size-1 rounded-full bg-gray-600"></span>
                     <p className="text-sm text-gray-600 capitalize">{template.jobType.replace("-", " ")}</p>
                   </div>

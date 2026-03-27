@@ -37,8 +37,8 @@ const validationSchema = Yup.object<CreateJobDto>({
   location: Yup.string().trim(),
   remote: Yup.boolean(),
   role: Yup.string(),
-  department: Yup.string(),
-  company: Yup.string().trim(),
+  departmentId: Yup.string(),
+  companyId: Yup.string().trim(),
   salaryMin: Yup.number()
     .min(0, "Must be a positive number")
     .transform((value, original) => (original === "" ? undefined : value)),
@@ -76,8 +76,8 @@ const initialValues: FormValues = {
   location: "",
   remote: false,
   role: "",
-  department: "",
-  company: "",
+  departmentId: "",
+  companyId: "",
   salaryMin: undefined,
   salaryMax: undefined,
   currency: "NGN",
@@ -106,8 +106,8 @@ export function CreateJob({ job: existingJob }: CreateJobProps = {}) {
         location: existingJob.location ?? "",
         remote: existingJob.remote ?? false,
         role: existingJob.role ?? "",
-        department: existingJob.department ?? "",
-        company: existingJob.company ?? "",
+        departmentId: existingJob.department?.id ?? "",
+        companyId: existingJob.company?.id ?? "",
         salaryMin: existingJob.salaryMin,
         salaryMax: existingJob.salaryMax,
         currency: existingJob.currency ?? "NGN",
@@ -146,8 +146,8 @@ export function CreateJob({ job: existingJob }: CreateJobProps = {}) {
         location: values.location ? sanitizeText(values.location) : undefined,
         remote: values.remote,
         role: values.role || undefined,
-        department: values.department || undefined,
-        company: values.company ? sanitizeText(values.company) : undefined,
+        department: values.departmentId ? MOCK_DEPARTMENTS.find((d) => d.id === values.departmentId) : undefined,
+        company: values.companyId ? { id: values.companyId, name: sanitizeText(values.companyId) } : undefined,
         salaryMin: values.salaryMin,
         salaryMax: values.salaryMax,
         currency: values.salaryMin != null || values.salaryMax != null ? values.currency : undefined,
@@ -195,13 +195,16 @@ export function CreateJob({ job: existingJob }: CreateJobProps = {}) {
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-1.5">
             <Label className="text-sm font-medium">Department</Label>
-            <Select value={formik.values.department ?? ""} onValueChange={(v) => formik.setFieldValue("department", v)}>
+            <Select
+              value={formik.values.departmentId ?? ""}
+              onValueChange={(v) => formik.setFieldValue("departmentId", v)}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select Department" />
               </SelectTrigger>
               <SelectContent position="popper">
                 {MOCK_DEPARTMENTS.filter((d) => d.id !== "all").map((d) => (
-                  <SelectItem key={d.id} value={d.name}>
+                  <SelectItem key={d.id} value={d.id}>
                     {d.name}
                   </SelectItem>
                 ))}

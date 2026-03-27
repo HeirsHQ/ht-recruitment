@@ -1,3 +1,5 @@
+import type { Company, Department } from "./company";
+
 export type JobStatus = "open" | "closed" | "cancelled" | "pending" | "in progress";
 export type JobType = "full-time" | "part-time" | "contract";
 export type WorkType = "on-site" | "hybrid" | "remote";
@@ -31,8 +33,8 @@ export interface Job {
   salaryMax?: number;
   currency?: string;
   role?: string;
-  department?: string;
-  company?: string;
+  department?: Department;
+  company?: Company;
   requirements?: string[];
   benefits?: string[];
   closedAt?: Date;
@@ -107,8 +109,8 @@ export interface CreateJobDto {
   salaryMax?: number;
   currency?: string;
   role?: string;
-  department?: string;
-  company?: string;
+  departmentId?: string;
+  companyId?: string;
   requirements?: string[];
   benefits?: string[];
 }
@@ -116,6 +118,6 @@ export interface CreateJobDto {
 export interface JobTemplate {
   id: string;
   title: string;
-  department: string;
+  department: Department;
   jobType: JobType;
 }

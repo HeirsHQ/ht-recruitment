@@ -277,7 +277,7 @@ const Page = () => {
               <h2 className="text-2xl font-bold text-gray-900">Application Submitted!</h2>
               <p className="text-gray-500">
                 Your application for <span className="font-semibold text-gray-700">{job.title}</span> at{" "}
-                <span className="font-semibold text-gray-700">{job.company}</span> has been received.
+                <span className="font-semibold text-gray-700">{job.company?.name}</span> has been received.
               </p>
             </motion.div>
             <motion.div
@@ -373,11 +373,11 @@ const Page = () => {
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                 <div className="flex items-center gap-x-2">
                   <Building2 className="size-4" />
-                  <span className="text-sm text-gray-600">{job.company}</span>
+                  <span className="text-sm text-gray-600">{job.company?.name}</span>
                 </div>
                 <div className="flex items-center gap-x-2">
                   <Briefcase className="size-4" />
-                  <span className="text-sm text-gray-600">{job.department}</span>
+                  <span className="text-sm text-gray-600">{job.department?.name}</span>
                 </div>
                 <div className="flex items-center gap-x-2">
                   <DollarSign className="size-4" />
@@ -713,11 +713,11 @@ const Page = () => {
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
               <div className="flex items-center gap-x-2">
                 <Building2 className="size-4" />
-                <span className="text-sm text-gray-600">{job.company}</span>
+                <span className="text-sm text-gray-600">{job.company?.name}</span>
               </div>
               <div className="flex items-center gap-x-2">
                 <Briefcase className="size-4" />
-                <span className="text-sm text-gray-600">{job.department}</span>
+                <span className="text-sm text-gray-600">{job.department?.name}</span>
               </div>
               <div className="flex items-center gap-x-2">
                 <DollarSign className="size-4" />
@@ -780,7 +780,7 @@ const Page = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-gray-600">Department</p>
-                  <p className="text-sm font-semibold capitalize">{job.department}</p>
+                  <p className="text-sm font-semibold capitalize">{job.department?.name}</p>
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-gray-600">Location</p>

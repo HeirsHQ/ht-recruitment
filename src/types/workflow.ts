@@ -1,3 +1,4 @@
+import type { Department } from "./company";
 import type { Job, PipelineStageConfig } from "./job";
 
 export interface WorkflowTemplate {
@@ -5,7 +6,7 @@ export interface WorkflowTemplate {
   name: string;
   description: string;
   stages: PipelineStageConfig[];
-  department: string;
+  department: Department;
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;

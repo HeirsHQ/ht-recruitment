@@ -393,7 +393,7 @@ const Page = () => {
               {job.department && (
                 <div className="flex items-center justify-between">
                   <span className="text-gray-500">Department</span>
-                  <span>{job.department}</span>
+                  <span>{job.department.name}</span>
                 </div>
               )}
               {job.location && (
