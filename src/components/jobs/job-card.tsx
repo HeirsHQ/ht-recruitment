@@ -1,13 +1,11 @@
 "use client";
 
-import { CircleCheck, Clock, Eye, MoreVertical, Pencil, Trash2, XCircle } from "lucide-react";
-import type { ColumnDef } from "@tanstack/react-table";
+import { CircleCheck, Clock, Eye, MapPin, MoreVertical, Pencil, Trash2, Users, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { Job, JobStatus } from "@/types/job";
 import { Button } from "@/components/ui/button";
@@ -20,53 +18,100 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-function JobActions({ job }: { job: Job }) {
+interface Props {
+  job: Job;
+}
+
+const statusConfig: Record<JobStatus, { icon: typeof CircleCheck; className: string }> = {
+  open: { icon: CircleCheck, className: "text-green-600" },
+  closed: { icon: XCircle, className: "text-red-600" },
+  cancelled: { icon: XCircle, className: "text-red-600" },
+  pending: { icon: Clock, className: "text-yellow-600" },
+  "in progress": { icon: Clock, className: "text-yellow-600" },
+};
+
+export const JobCard = ({ job }: Props) => {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
+  const status = statusConfig[job.status];
+  const StatusIcon = status.icon;
+
   return (
     <>
-      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-        <PopoverTrigger asChild>
-          <button className="grid size-9 shrink-0 place-items-center rounded-md hover:bg-gray-100 dark:hover:bg-neutral-700">
-            <MoreVertical className="size-5" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent align="end" className="w-56 p-1">
-          <div className="flex w-full flex-col">
-            <Link
-              href={`/jobs/${job.id}`}
-              className="flex w-full items-center gap-x-2 rounded-md px-2.5 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700"
-              onClick={() => setPopoverOpen(false)}
-            >
-              <Eye className="size-4 text-gray-500" />
-              View Details
-            </Link>
-            <button
-              className="flex w-full items-center gap-x-2 rounded-md px-2.5 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700"
-              onClick={() => {
-                setPopoverOpen(false);
-                setEditOpen(true);
-              }}
-            >
-              <Pencil className="size-4 text-gray-500" />
-              Edit
-            </button>
-            <button
-              className="flex w-full items-center gap-x-2 rounded-md px-2.5 py-1.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-              onClick={() => {
-                setPopoverOpen(false);
-                setDeleteOpen(true);
-              }}
-            >
-              <Trash2 className="size-4" />
-              Delete
-            </button>
+      <div className="flex h-full flex-col justify-between rounded-xl border bg-white p-5 transition-shadow duration-300 hover:shadow-md">
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            <p className="truncate text-sm font-semibold">{job.title}</p>
+            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+              <PopoverTrigger asChild>
+                <button className="grid size-7 shrink-0 place-items-center rounded-md hover:bg-gray-100">
+                  <MoreVertical className="size-4" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-44 p-1">
+                <div className="flex w-full flex-col">
+                  <Link
+                    href={`/jobs/${job.id}`}
+                    className="flex w-full items-center gap-x-2 rounded-md px-2.5 py-1.5 text-sm hover:bg-gray-100"
+                    onClick={() => setPopoverOpen(false)}
+                  >
+                    <Eye className="size-4 text-gray-500" />
+                    View Details
+                  </Link>
+                  <button
+                    className="flex w-full items-center gap-x-2 rounded-md px-2.5 py-1.5 text-sm hover:bg-gray-100"
+                    onClick={() => {
+                      setPopoverOpen(false);
+                      setEditOpen(true);
+                    }}
+                  >
+                    <Pencil className="size-4 text-gray-500" />
+                    Edit
+                  </button>
+                  <button
+                    className="flex w-full items-center gap-x-2 rounded-md px-2.5 py-1.5 text-sm text-red-600 hover:bg-red-50"
+                    onClick={() => {
+                      setPopoverOpen(false);
+                      setDeleteOpen(true);
+                    }}
+                  >
+                    <Trash2 className="size-4" />
+                    Delete
+                  </button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
-        </PopoverContent>
-      </Popover>
+          <p className="text-xs text-gray-500">{job.company?.name}</p>
+          <div className="flex items-center gap-x-1.5 text-xs text-gray-500">
+            <MapPin className="size-3.5 shrink-0" />
+            <span className="truncate">
+              {job.location} ({job.workType})
+            </span>
+          </div>
+          <div className="text-xs text-gray-500 capitalize">{job.experienceType.replace("-", " ")}</div>
+        </div>
+        <div className="mt-4 space-y-3 border-t pt-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-x-1.5 text-xs text-gray-500">
+              <Users className="size-3.5" />
+              <span>
+                {job.applications?.length ?? 0} applicant{(job.applications?.length ?? 0) !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="flex items-center gap-x-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium capitalize">
+              <StatusIcon className={`size-3 ${status.className}`} />
+              {job.status}
+            </div>
+          </div>
+          <p className="text-xs text-gray-400">{format(new Date(job.createdAt), "dd MMM yyyy")}</p>
+        </div>
+      </div>
+
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -118,9 +163,9 @@ function JobActions({ job }: { job: Job }) {
                     <SelectItem value="associate-level">Associate</SelectItem>
                     <SelectItem value="mid-level">Mid</SelectItem>
                     <SelectItem value="senior-level">Senior</SelectItem>
-                    <SelectItem value="management-leval">Management</SelectItem>
-                    <SelectItem value="director-leval">Director</SelectItem>
-                    <SelectItem value="executive-leval">Executive</SelectItem>
+                    <SelectItem value="management-level">Management</SelectItem>
+                    <SelectItem value="director-level">Director</SelectItem>
+                    <SelectItem value="executive-level">Executive</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -145,6 +190,7 @@ function JobActions({ job }: { job: Job }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
@@ -172,73 +218,4 @@ function JobActions({ job }: { job: Job }) {
       </Dialog>
     </>
   );
-}
-
-// ---------------------------------------------------------------------------
-// Column definitions
-// ---------------------------------------------------------------------------
-const getStatusBadge = (status: JobStatus) => {
-  function icon(status: JobStatus) {
-    switch (status) {
-      case "cancelled":
-      case "closed":
-        return <XCircle className="size-3 text-red-600" />;
-      case "in progress":
-      case "pending":
-        return <Clock className="size-3 text-yellow-600" />;
-      case "open":
-        return <CircleCheck className="size-3 text-green-600" />;
-    }
-  }
-  return (
-    <div className="flex w-fit items-center gap-x-1 rounded-3xl bg-gray-100 px-2 py-1 text-xs font-medium text-black capitalize">
-      {icon(status)}
-      {status}
-    </div>
-  );
 };
-
-export const columns: ColumnDef<Job>[] = [
-  {
-    accessorKey: "title",
-    header: "Role",
-  },
-  {
-    accessorKey: "company",
-    header: "Company",
-    cell: ({ row }) => <span>{row.original.company?.name ?? "—"}</span>,
-  },
-  {
-    accessorKey: "location",
-    header: "Location",
-    cell: ({ row }) => (
-      <span className="capitalize">
-        {row.original.location ?? "—"} ({row.original.workType})
-      </span>
-    ),
-  },
-  {
-    accessorKey: "experienceType",
-    header: "Type",
-    cell: ({ row }) => <span className="capitalize">{row.original.experienceType.replace("-", " ")}</span>,
-  },
-  {
-    id: "applicants",
-    header: "Applicants",
-    cell: ({ row }) => <span>{row.original.applications?.length}</span>,
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => getStatusBadge(row.original.status),
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Posted",
-    cell: ({ row }) => format(new Date(row.original.createdAt), "dd MMM yyyy"),
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => <JobActions job={row.original} />,
-  },
-];

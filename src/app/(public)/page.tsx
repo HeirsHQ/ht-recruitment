@@ -63,19 +63,20 @@ const Page = () => {
   };
 
   const filtered = useMemo(() => {
-    let jobs = MOCK_JOBS.filter((job) => job.status === "open");
+    // let jobs = MOCK_JOBS.filter((job) => job.status === "open");
+    let jobs = MOCK_JOBS;
     if (search.trim()) {
       const query = search.toLowerCase();
       jobs = jobs.filter(
         (job) =>
           job.title.toLowerCase().includes(query) ||
-          job.company?.toLowerCase().includes(query) ||
+          job.company?.name?.toLowerCase().includes(query) ||
           job.location?.toLowerCase().includes(query) ||
           job.role?.toLowerCase().includes(query),
       );
     }
     if (department !== "all") {
-      jobs = jobs.filter((job) => job.department?.toLowerCase() === department.toLowerCase());
+      jobs = jobs.filter((job) => job.department?.id === department);
     }
     if (filters.workType.length > 0) {
       jobs = jobs.filter((job) => filters.workType.includes(job.workType));
@@ -233,7 +234,7 @@ const Page = () => {
                     {VIEWS.map((view) => (
                       <button
                         className={cn(
-                          "grid size-10 shrink-0 place-items-center rounded-md transition-all duration-300",
+                          "grid aspect-[1.3/1] w-10 shrink-0 place-items-center rounded-md transition-all duration-300",
                           layout === view.value ? "bg-white" : "",
                         )}
                         key={view.value}

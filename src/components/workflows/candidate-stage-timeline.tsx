@@ -1,7 +1,7 @@
 "use client";
 
+import { Check, MoveRight, X, Zap } from "lucide-react";
 import { format } from "date-fns";
-import { ArrowRight, Check, MoveRight, X, Zap } from "lucide-react";
 
 import type { StageHistoryEntry } from "@/types/workflow";
 import { cn } from "@/lib";
@@ -33,7 +33,7 @@ export function CandidateStageTimeline({ history }: CandidateStageTimelineProps)
 
         return (
           <div key={`${entry.stageId}-${index}`} className="relative flex gap-x-3 pb-6">
-            {!isLast && <div className="absolute top-6 left-[11px] h-full w-px bg-gray-200 dark:bg-neutral-700" />}
+            {!isLast && <div className="absolute top-6 left-2.75 h-full w-px bg-gray-200 dark:bg-neutral-700" />}
             <div
               className={cn(
                 "relative z-10 grid size-6 shrink-0 place-items-center rounded-full border bg-white dark:bg-neutral-900",

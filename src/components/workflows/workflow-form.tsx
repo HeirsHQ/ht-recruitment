@@ -25,11 +25,11 @@ export function WorkflowForm({ initialData, onSave, onCancel }: WorkflowFormProp
 
   const [name, setName] = useState(initialData?.name ?? "");
   const [description, setDescription] = useState(initialData?.description ?? "");
-  const [department, setDepartment] = useState(initialData?.department ?? "");
+  const [departmentId, setDepartmentId] = useState(initialData?.department?.id ?? "");
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
   const [stages, setStages] = useState<PipelineStageConfig[]>(initialData?.stages ?? []);
 
-  const canSave = name.trim() && department && stages.length >= 2;
+  const canSave = name.trim() && departmentId && stages.length >= 2;
 
   const handleSave = () => {
     if (!canSave) return;
@@ -40,11 +40,14 @@ export function WorkflowForm({ initialData, onSave, onCancel }: WorkflowFormProp
     if (!cleanName) return;
 
     const now = new Date();
+    const dept = MOCK_DEPARTMENTS.find((d) => d.id === departmentId);
+    if (!dept) return;
+
     const workflow: WorkflowTemplate = {
       id: initialData?.id ?? cleanName.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now(),
       name: cleanName,
       description: cleanDescription,
-      department,
+      department: dept,
       stages,
       isActive,
       createdBy: initialData?.createdBy ?? "Current User",
@@ -74,13 +77,13 @@ export function WorkflowForm({ initialData, onSave, onCancel }: WorkflowFormProp
             <label className="text-sm font-medium">
               Department <span className="text-red-500">*</span>
             </label>
-            <Select value={department} onValueChange={setDepartment}>
+            <Select value={departmentId} onValueChange={setDepartmentId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select department" />
               </SelectTrigger>
               <SelectContent position="popper">
-                {MOCK_DEPARTMENTS.map((dept) => (
-                  <SelectItem key={dept.id} value={dept.name}>
+                {MOCK_DEPARTMENTS.filter((d) => d.id !== "all").map((dept) => (
+                  <SelectItem key={dept.id} value={dept.id}>
                     {dept.name}
                   </SelectItem>
                 ))}

@@ -1,0 +1,2207 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "HT Recruitment Portal API",
+    "description": "Backend API contract for the HT Recruitment Portal. Authentication is handled separately.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api/v1/",
+      "description": "Default API server"
+    }
+  ],
+  "paths": {
+    "/jobs": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "List jobs",
+        "description": "List jobs with optional filters.",
+        "operationId": "listJobs",
+        "parameters": [
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/Limit" },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search title, company, location, role",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "$ref": "#/components/schemas/JobStatus" }
+          },
+          {
+            "name": "jobType",
+            "in": "query",
+            "schema": { "$ref": "#/components/schemas/JobType" }
+          },
+          {
+            "name": "workType",
+            "in": "query",
+            "schema": { "$ref": "#/components/schemas/WorkType" }
+          },
+          {
+            "name": "experienceType",
+            "in": "query",
+            "schema": { "$ref": "#/components/schemas/ExperienceType" }
+          },
+          {
+            "name": "department",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "salaryMin",
+            "in": "query",
+            "schema": { "type": "number", "minimum": 0 }
+          },
+          {
+            "name": "salaryMax",
+            "in": "query",
+            "schema": { "type": "number", "minimum": 0 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of jobs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/Job" } },
+                        "meta": { "$ref": "#/components/schemas/PaginationMeta" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Jobs"],
+        "summary": "Create a new job",
+        "operationId": "createJob",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateJobDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created job",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Job" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "Get job details",
+        "operationId": "getJob",
+        "parameters": [{ "$ref": "#/components/parameters/JobId" }],
+        "responses": {
+          "200": {
+            "description": "Job details including nested applications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Job" } } }
+                  ]
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "tags": ["Jobs"],
+        "summary": "Update a job",
+        "operationId": "updateJob",
+        "parameters": [{ "$ref": "#/components/parameters/JobId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateJobDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated job",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Job" } } }
+                  ]
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Jobs"],
+        "summary": "Delete a job",
+        "description": "Fails if the job has active applications.",
+        "operationId": "deleteJob",
+        "parameters": [{ "$ref": "#/components/parameters/JobId" }],
+        "responses": {
+          "204": { "description": "No content" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/jobs/{id}/status": {
+      "patch": {
+        "tags": ["Jobs"],
+        "summary": "Change job status",
+        "operationId": "updateJobStatus",
+        "parameters": [{ "$ref": "#/components/parameters/JobId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": {
+                  "status": { "$ref": "#/components/schemas/JobStatus" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated job",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Job" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}/analytics": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "Get job analytics",
+        "description": "Views, application timeline, source breakdown, and status stats for a single job.",
+        "operationId": "getJobAnalytics",
+        "parameters": [{ "$ref": "#/components/parameters/JobId" }],
+        "responses": {
+          "200": {
+            "description": "Job analytics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/JobAnalytics" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}/activities": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "Get job activity log",
+        "description": "Audit trail of events for a job (applications received, stage changes, notes, etc.).",
+        "operationId": "getJobActivities",
+        "parameters": [
+          { "$ref": "#/components/parameters/JobId" },
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/Limit" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated activity log",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/ActivityEntry" } },
+                        "meta": { "$ref": "#/components/schemas/PaginationMeta" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}/attachments": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "List job attachments",
+        "operationId": "listJobAttachments",
+        "parameters": [{ "$ref": "#/components/parameters/JobId" }],
+        "responses": {
+          "200": {
+            "description": "List of attachments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/Attachment" } }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Jobs"],
+        "summary": "Upload a job attachment",
+        "operationId": "uploadJobAttachment",
+        "parameters": [{ "$ref": "#/components/parameters/JobId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Uploaded attachment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Attachment" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}/attachments/{attachmentId}": {
+      "delete": {
+        "tags": ["Jobs"],
+        "summary": "Delete a job attachment",
+        "operationId": "deleteJobAttachment",
+        "parameters": [
+          { "$ref": "#/components/parameters/JobId" },
+          {
+            "name": "attachmentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "No content" }
+        }
+      }
+    },
+    "/job-templates": {
+      "get": {
+        "tags": ["Job Templates"],
+        "summary": "List job templates",
+        "operationId": "listJobTemplates",
+        "responses": {
+          "200": {
+            "description": "List of job templates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/JobTemplate" } }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/job-templates/{id}": {
+      "get": {
+        "tags": ["Job Templates"],
+        "summary": "Get a job template",
+        "operationId": "getJobTemplate",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "Job template",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/JobTemplate" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/applications": {
+      "get": {
+        "tags": ["Applications"],
+        "summary": "List applications for a job",
+        "operationId": "listApplications",
+        "parameters": [
+          { "$ref": "#/components/parameters/JobIdPath" },
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/Limit" },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by pipeline stage ID",
+            "schema": { "type": "string" }
+          },
+          { "name": "source", "in": "query", "schema": { "$ref": "#/components/schemas/ApplicationSource" } },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["matchScore", "appliedAt", "status"] }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["asc", "desc"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of applications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/JobApplication" } },
+                        "meta": { "$ref": "#/components/schemas/PaginationMeta" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Applications"],
+        "summary": "Submit a job application (public)",
+        "operationId": "createApplication",
+        "parameters": [{ "$ref": "#/components/parameters/JobIdPath" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": { "$ref": "#/components/schemas/ApplyDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created application",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/JobApplication" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/applications/{applicationId}": {
+      "get": {
+        "tags": ["Applications"],
+        "summary": "Get application details",
+        "operationId": "getApplication",
+        "parameters": [
+          { "$ref": "#/components/parameters/JobIdPath" },
+          { "$ref": "#/components/parameters/ApplicationId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Application details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/JobApplication" } } }
+                  ]
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/jobs/{jobId}/applications/{applicationId}/status": {
+      "patch": {
+        "tags": ["Applications"],
+        "summary": "Move application to a different pipeline stage",
+        "operationId": "updateApplicationStatus",
+        "parameters": [
+          { "$ref": "#/components/parameters/JobIdPath" },
+          { "$ref": "#/components/parameters/ApplicationId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": {
+                  "status": { "type": "string", "description": "Target stage ID" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated application",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/JobApplication" } } }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stage requires approval (triggers approval request automatically)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/applications/{applicationId}/rating": {
+      "patch": {
+        "tags": ["Applications"],
+        "summary": "Set a rating on an application",
+        "operationId": "updateApplicationRating",
+        "parameters": [
+          { "$ref": "#/components/parameters/JobIdPath" },
+          { "$ref": "#/components/parameters/ApplicationId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rating"],
+                "properties": {
+                  "rating": {
+                    "type": "string",
+                    "enum": ["none", "strong-yes", "yes", "maybe", "no", "strong-no"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rating updated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessEnvelope" } } }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/applications/{applicationId}/notes": {
+      "post": {
+        "tags": ["Applications"],
+        "summary": "Add a note to an application",
+        "operationId": "addApplicationNote",
+        "parameters": [
+          { "$ref": "#/components/parameters/JobIdPath" },
+          { "$ref": "#/components/parameters/ApplicationId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["text"],
+                "properties": { "text": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Note added",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessEnvelope" } } }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/stages": {
+      "get": {
+        "tags": ["Pipeline Stages"],
+        "summary": "List pipeline stages for a job",
+        "operationId": "listStages",
+        "parameters": [{ "$ref": "#/components/parameters/JobIdPath" }],
+        "responses": {
+          "200": {
+            "description": "Ordered list of pipeline stages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/PipelineStageConfig" } }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Pipeline Stages"],
+        "summary": "Add a new stage",
+        "operationId": "createStage",
+        "parameters": [{ "$ref": "#/components/parameters/JobIdPath" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateStageDto" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created stage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/PipelineStageConfig" } }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate stage title",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/stages/{stageId}": {
+      "put": {
+        "tags": ["Pipeline Stages"],
+        "summary": "Update a stage",
+        "operationId": "updateStage",
+        "parameters": [{ "$ref": "#/components/parameters/JobIdPath" }, { "$ref": "#/components/parameters/StageId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateStageDto" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated stage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/PipelineStageConfig" } }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Pipeline Stages"],
+        "summary": "Remove a stage",
+        "description": "Fails if any applications are currently in this stage.",
+        "operationId": "deleteStage",
+        "parameters": [{ "$ref": "#/components/parameters/JobIdPath" }, { "$ref": "#/components/parameters/StageId" }],
+        "responses": {
+          "204": { "description": "No content" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/jobs/{jobId}/stages/reorder": {
+      "put": {
+        "tags": ["Pipeline Stages"],
+        "summary": "Reorder stages",
+        "operationId": "reorderStages",
+        "parameters": [{ "$ref": "#/components/parameters/JobIdPath" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["stageIds"],
+                "properties": {
+                  "stageIds": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Ordered list of stage IDs"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stages reordered",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessEnvelope" } } }
+          }
+        }
+      }
+    },
+    "/candidates": {
+      "get": {
+        "tags": ["Candidates"],
+        "summary": "List candidates",
+        "description": "List candidates across all jobs.",
+        "operationId": "listCandidates",
+        "parameters": [
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "name": "search", "in": "query", "description": "Search by name or email", "schema": { "type": "string" } },
+          { "name": "pipelineId", "in": "query", "description": "Filter by pipeline", "schema": { "type": "string" } },
+          {
+            "name": "stageId",
+            "in": "query",
+            "description": "Filter by current stage",
+            "schema": { "type": "string" }
+          },
+          { "name": "jobId", "in": "query", "description": "Filter by job", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "$ref": "#/components/schemas/CandidateStatus" } },
+          { "name": "approvalStatus", "in": "query", "schema": { "$ref": "#/components/schemas/ApprovalStatus" } },
+          { "name": "minMatchScore", "in": "query", "schema": { "type": "number", "minimum": 0, "maximum": 100 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of candidates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/Candidate" } },
+                        "meta": { "$ref": "#/components/schemas/PaginationMeta" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/candidates/{id}": {
+      "get": {
+        "tags": ["Candidates"],
+        "summary": "Get candidate profile",
+        "description": "Full candidate profile with experience, education, certifications.",
+        "operationId": "getCandidate",
+        "parameters": [{ "$ref": "#/components/parameters/CandidateId" }],
+        "responses": {
+          "200": {
+            "description": "Candidate with nested relations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Candidate" } } }
+                  ]
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "patch": {
+        "tags": ["Candidates"],
+        "summary": "Update candidate information",
+        "operationId": "updateCandidate",
+        "parameters": [{ "$ref": "#/components/parameters/CandidateId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tags": { "type": "array", "items": { "type": "string" } },
+                  "notes": { "type": "string" },
+                  "rating": { "type": "number", "minimum": 1, "maximum": 5 },
+                  "status": { "$ref": "#/components/schemas/CandidateStatus" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Candidate updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Candidate" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/candidates/{id}/stage": {
+      "patch": {
+        "tags": ["Candidates"],
+        "summary": "Move candidate to a different stage",
+        "description": "Records stage history automatically. Returns 409 if the target stage requires approval.",
+        "operationId": "updateCandidateStage",
+        "parameters": [{ "$ref": "#/components/parameters/CandidateId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["toStageId", "performedBy"],
+                "properties": {
+                  "toStageId": { "type": "string", "description": "Target stage ID" },
+                  "performedBy": { "type": "string", "description": "User performing the move" },
+                  "notes": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated candidate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Candidate" } } }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stage requires approval (creates approval request)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } }
+          }
+        }
+      }
+    },
+    "/candidates/{id}/pipeline-instance": {
+      "get": {
+        "tags": ["Candidates"],
+        "summary": "Get candidate pipeline instance",
+        "description": "Get the pipeline instance tracking this candidate's stage progression.",
+        "operationId": "getCandidatePipelineInstance",
+        "parameters": [{ "$ref": "#/components/parameters/CandidateId" }],
+        "responses": {
+          "200": {
+            "description": "Pipeline instance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/PipelineInstance" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pipelines": {
+      "get": {
+        "tags": ["Pipelines"],
+        "summary": "List pipeline templates",
+        "operationId": "listPipelines",
+        "parameters": [
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "name": "isActive", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "department", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of pipeline templates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/PipelineTemplate" } },
+                        "meta": { "$ref": "#/components/schemas/PaginationMeta" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Pipelines"],
+        "summary": "Create a pipeline template",
+        "operationId": "createPipeline",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreatePipelineDto" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created pipeline template",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/PipelineTemplate" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pipelines/{id}": {
+      "get": {
+        "tags": ["Pipelines"],
+        "summary": "Get pipeline template",
+        "description": "Get pipeline template with all stage configs.",
+        "operationId": "getPipeline",
+        "parameters": [{ "$ref": "#/components/parameters/PipelineId" }],
+        "responses": {
+          "200": {
+            "description": "Pipeline template",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/PipelineTemplate" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Pipelines"],
+        "summary": "Update a pipeline template",
+        "operationId": "updatePipeline",
+        "parameters": [{ "$ref": "#/components/parameters/PipelineId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreatePipelineDto" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated pipeline template",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/PipelineTemplate" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Pipelines"],
+        "summary": "Delete a pipeline template",
+        "description": "Fails if any active candidates are using it.",
+        "operationId": "deletePipeline",
+        "parameters": [{ "$ref": "#/components/parameters/PipelineId" }],
+        "responses": {
+          "204": { "description": "No content" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/pipelines/{id}/status": {
+      "patch": {
+        "tags": ["Pipelines"],
+        "summary": "Activate or deactivate a pipeline",
+        "operationId": "updatePipelineStatus",
+        "parameters": [{ "$ref": "#/components/parameters/PipelineId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["isActive"],
+                "properties": { "isActive": { "type": "boolean" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pipeline status updated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessEnvelope" } } }
+          }
+        }
+      }
+    },
+    "/approvals": {
+      "get": {
+        "tags": ["Approvals"],
+        "summary": "List approval requests",
+        "operationId": "listApprovals",
+        "parameters": [
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "name": "status", "in": "query", "schema": { "$ref": "#/components/schemas/ApprovalStatus" } },
+          { "name": "jobId", "in": "query", "schema": { "type": "string" } },
+          { "name": "pipelineId", "in": "query", "description": "Filter by pipeline", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of approval requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/ApprovalRequest" } },
+                        "meta": { "$ref": "#/components/schemas/PaginationMeta" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Approvals"],
+        "summary": "Create an approval request",
+        "description": "Typically triggered automatically when moving a candidate to an approval-gated stage.",
+        "operationId": "createApproval",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateApprovalDto" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Approval request created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/ApprovalRequest" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/approvals/{id}": {
+      "get": {
+        "tags": ["Approvals"],
+        "summary": "Get approval request with comments",
+        "operationId": "getApproval",
+        "parameters": [{ "$ref": "#/components/parameters/ApprovalId" }],
+        "responses": {
+          "200": {
+            "description": "Approval request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/ApprovalRequest" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/approvals/{id}/approve": {
+      "post": {
+        "tags": ["Approvals"],
+        "summary": "Approve a request",
+        "description": "Candidate is moved to the target stage.",
+        "operationId": "approveRequest",
+        "parameters": [{ "$ref": "#/components/parameters/ApprovalId" }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resolvedBy": { "type": "string" },
+                  "comment": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Approved",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessEnvelope" } } }
+          }
+        }
+      }
+    },
+    "/approvals/{id}/reject": {
+      "post": {
+        "tags": ["Approvals"],
+        "summary": "Reject a request",
+        "description": "Candidate stays in current stage.",
+        "operationId": "rejectRequest",
+        "parameters": [{ "$ref": "#/components/parameters/ApprovalId" }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resolvedBy": { "type": "string" },
+                  "comment": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rejected",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessEnvelope" } } }
+          }
+        }
+      }
+    },
+    "/approvals/{id}/comments": {
+      "post": {
+        "tags": ["Approvals"],
+        "summary": "Add a comment to an approval request",
+        "operationId": "addApprovalComment",
+        "parameters": [{ "$ref": "#/components/parameters/ApprovalId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["authorName", "text"],
+                "properties": {
+                  "authorName": { "type": "string" },
+                  "text": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Comment added",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessEnvelope" } } }
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "List notifications for the current user",
+        "operationId": "listNotifications",
+        "parameters": [
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "name": "isRead", "in": "query", "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of notifications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/Notification" } },
+                        "meta": { "$ref": "#/components/schemas/PaginationMeta" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/{id}/read": {
+      "patch": {
+        "tags": ["Notifications"],
+        "summary": "Mark notification as read",
+        "operationId": "markNotificationRead",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "Marked as read",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessEnvelope" } } }
+          }
+        }
+      }
+    },
+    "/notifications/read-all": {
+      "patch": {
+        "tags": ["Notifications"],
+        "summary": "Mark all notifications as read",
+        "operationId": "markAllNotificationsRead",
+        "responses": {
+          "200": {
+            "description": "All marked as read",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessEnvelope" } } }
+          }
+        }
+      }
+    },
+    "/dashboard/stats": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get dashboard overview",
+        "description": "Aggregate stats, chart data, and recent jobs for the dashboard page.",
+        "operationId": "getDashboardStats",
+        "responses": {
+          "200": {
+            "description": "Dashboard data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/DashboardStats" } } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/summary": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Get reports KPI summary",
+        "operationId": "getReportsSummary",
+        "parameters": [{ "$ref": "#/components/parameters/DateFrom" }, { "$ref": "#/components/parameters/DateTo" }],
+        "responses": {
+          "200": {
+            "description": "KPI stats",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "totalCandidates": { "type": "integer" },
+                            "activeInPipeline": { "type": "integer" },
+                            "hired": { "type": "integer" },
+                            "totalJobs": { "type": "integer" }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/applications-over-time": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Applications over time",
+        "description": "Weekly aggregated application counts for the area chart.",
+        "operationId": "getApplicationsOverTime",
+        "parameters": [{ "$ref": "#/components/parameters/DateFrom" }, { "$ref": "#/components/parameters/DateTo" }],
+        "responses": {
+          "200": {
+            "description": "Weekly application counts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "week": { "type": "string", "description": "e.g. Mar 3" },
+                              "applications": { "type": "integer" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/pipeline-distribution": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Pipeline stage distribution",
+        "description": "Candidate counts per pipeline stage bucket.",
+        "operationId": "getPipelineDistribution",
+        "parameters": [{ "$ref": "#/components/parameters/DateFrom" }, { "$ref": "#/components/parameters/DateTo" }],
+        "responses": {
+          "200": {
+            "description": "Stage distribution",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "stage": { "type": "string" },
+                              "count": { "type": "integer" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/conversion-rates": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Pipeline conversion rates",
+        "description": "Stage-to-stage conversion percentages.",
+        "operationId": "getConversionRates",
+        "parameters": [{ "$ref": "#/components/parameters/DateFrom" }, { "$ref": "#/components/parameters/DateTo" }],
+        "responses": {
+          "200": {
+            "description": "Conversion rates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "from": { "type": "string" },
+                              "to": { "type": "string" },
+                              "rate": { "type": "number", "description": "Percentage 0-100" },
+                              "fromCount": { "type": "integer" },
+                              "toCount": { "type": "integer" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/candidate-sources": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Candidates by source",
+        "description": "Source breakdown for the pie chart.",
+        "operationId": "getCandidateSources",
+        "parameters": [{ "$ref": "#/components/parameters/DateFrom" }, { "$ref": "#/components/parameters/DateTo" }],
+        "responses": {
+          "200": {
+            "description": "Source breakdown",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "source": { "$ref": "#/components/schemas/ApplicationSource" },
+                              "count": { "type": "integer" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/hiring-by-department": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Hiring by department",
+        "operationId": "getHiringByDepartment",
+        "parameters": [{ "$ref": "#/components/parameters/DateFrom" }, { "$ref": "#/components/parameters/DateTo" }],
+        "responses": {
+          "200": {
+            "description": "Department hiring counts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "department": { "type": "string" },
+                              "hired": { "type": "integer" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/departments": {
+      "get": {
+        "tags": ["Reference Data"],
+        "summary": "List departments",
+        "operationId": "listDepartments",
+        "responses": {
+          "200": {
+            "description": "List of departments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/NamedEntity" } }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/roles": {
+      "get": {
+        "tags": ["Reference Data"],
+        "summary": "List job roles",
+        "operationId": "listRoles",
+        "responses": {
+          "200": {
+            "description": "List of roles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/NamedEntity" } }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "Page": {
+        "name": "page",
+        "in": "query",
+        "description": "Zero-based page index",
+        "schema": { "type": "integer", "default": 0, "minimum": 0 }
+      },
+      "Limit": {
+        "name": "limit",
+        "in": "query",
+        "description": "Items per page (max 100)",
+        "schema": { "type": "integer", "default": 20, "minimum": 1, "maximum": 100 }
+      },
+      "DateFrom": {
+        "name": "from",
+        "in": "query",
+        "description": "Start date (ISO 8601)",
+        "schema": { "type": "string", "format": "date" }
+      },
+      "DateTo": {
+        "name": "to",
+        "in": "query",
+        "description": "End date (ISO 8601)",
+        "schema": { "type": "string", "format": "date" }
+      },
+      "JobId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Job ID",
+        "schema": { "type": "string" }
+      },
+      "JobIdPath": {
+        "name": "jobId",
+        "in": "path",
+        "required": true,
+        "description": "Job ID",
+        "schema": { "type": "string" }
+      },
+      "ApplicationId": { "name": "applicationId", "in": "path", "required": true, "schema": { "type": "string" } },
+      "StageId": { "name": "stageId", "in": "path", "required": true, "schema": { "type": "string" } },
+      "CandidateId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Candidate ID",
+        "schema": { "type": "string" }
+      },
+      "PipelineId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Pipeline ID",
+        "schema": { "type": "string" }
+      },
+      "ApprovalId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Approval ID",
+        "schema": { "type": "string" }
+      }
+    },
+    "responses": {
+      "NotFound": {
+        "description": "Resource not found",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } }
+      },
+      "Conflict": {
+        "description": "Conflict — resource is in use or has dependencies",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } } }
+      }
+    },
+    "schemas": {
+      "SuccessEnvelope": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "status": { "type": "integer", "example": 200 }
+        }
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string", "example": "NOT_FOUND" },
+              "message": { "type": "string", "example": "Resource not found" }
+            }
+          },
+          "status": { "type": "integer", "example": 404 }
+        }
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "integer" },
+          "limit": { "type": "integer" },
+          "total": { "type": "integer" }
+        }
+      },
+      "JobStatus": { "type": "string", "enum": ["open", "closed", "cancelled", "pending", "in progress"] },
+      "JobType": { "type": "string", "enum": ["full-time", "part-time", "contract"] },
+      "WorkType": { "type": "string", "enum": ["on-site", "hybrid", "remote"] },
+      "ExperienceType": {
+        "type": "string",
+        "enum": [
+          "internship",
+          "entry-level",
+          "associate-level",
+          "mid-level",
+          "senior-level",
+          "management-level",
+          "director-level",
+          "executive-level"
+        ]
+      },
+      "Currency": { "type": "string", "enum": ["NGN", "USD", "EUR", "GBP"] },
+      "ApplicationSource": {
+        "type": "string",
+        "enum": ["LinkedIn", "Referral", "Job Board", "Company Website", "Recruiter", "Career Fair"]
+      },
+      "ApprovalStatus": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+      "CandidateStatus": { "type": "string", "enum": ["active", "inactive"] },
+      "Job": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "status": { "$ref": "#/components/schemas/JobStatus" },
+          "jobType": { "$ref": "#/components/schemas/JobType" },
+          "workType": { "$ref": "#/components/schemas/WorkType" },
+          "experienceType": { "$ref": "#/components/schemas/ExperienceType" },
+          "location": { "type": "string" },
+          "remote": { "type": "boolean" },
+          "role": { "type": "string" },
+          "department": { "type": "string" },
+          "company": { "type": "string" },
+          "salaryMin": { "type": "number" },
+          "salaryMax": { "type": "number" },
+          "currency": { "$ref": "#/components/schemas/Currency" },
+          "openUntil": { "type": "string", "format": "date-time" },
+          "responsibilities": { "type": "array", "items": { "type": "string" } },
+          "requirements": { "type": "array", "items": { "type": "string" } },
+          "benefits": { "type": "array", "items": { "type": "string" } },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "applications": { "type": "array", "items": { "$ref": "#/components/schemas/JobApplication" } },
+          "views": { "type": "integer" },
+          "closedAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateJobDto": {
+        "type": "object",
+        "required": ["title"],
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "jobType": { "$ref": "#/components/schemas/JobType" },
+          "workType": { "$ref": "#/components/schemas/WorkType" },
+          "experienceType": { "$ref": "#/components/schemas/ExperienceType" },
+          "location": { "type": "string" },
+          "remote": { "type": "boolean" },
+          "role": { "type": "string" },
+          "department": { "type": "string" },
+          "company": { "type": "string" },
+          "salaryMin": { "type": "number", "minimum": 0 },
+          "salaryMax": { "type": "number", "minimum": 0, "description": "Must be >= salaryMin" },
+          "currency": { "$ref": "#/components/schemas/Currency" },
+          "openUntil": { "type": "string", "format": "date-time", "description": "Must be in the future" },
+          "responsibilities": { "type": "array", "items": { "type": "string" } },
+          "requirements": { "type": "array", "items": { "type": "string" } },
+          "benefits": { "type": "array", "items": { "type": "string" } },
+          "tags": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "JobTemplate": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "department": { "type": "string" },
+          "jobType": { "$ref": "#/components/schemas/JobType" }
+        }
+      },
+      "JobApplication": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "jobId": { "type": "string" },
+          "applicant": { "$ref": "#/components/schemas/JobApplicant" },
+          "status": { "type": "string", "description": "Pipeline stage ID" },
+          "workflow": { "$ref": "#/components/schemas/PipelineStageConfig" },
+          "matchScore": { "type": "number", "minimum": 0, "maximum": 100 },
+          "source": { "$ref": "#/components/schemas/ApplicationSource" },
+          "appliedAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "JobApplicant": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "resume": { "type": "string", "format": "uri", "description": "Resume file URL" },
+          "coverLetter": { "type": "string" },
+          "appliedAt": { "type": "string", "format": "date-time" },
+          "skills": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "ApplyDto": {
+        "type": "object",
+        "required": [
+          "fullName",
+          "email",
+          "phoneNumber",
+          "location",
+          "linkedInUrl",
+          "summary",
+          "skills",
+          "coverLetter",
+          "resumeFile"
+        ],
+        "properties": {
+          "fullName": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "phoneNumber": { "type": "string" },
+          "location": { "type": "string" },
+          "linkedInUrl": { "type": "string", "format": "uri" },
+          "summary": { "type": "string" },
+          "skills": { "type": "array", "items": { "type": "string" } },
+          "coverLetter": { "type": "string" },
+          "resumeFile": { "type": "string", "format": "binary", "description": "PDF only, max 5 MB" }
+        }
+      },
+      "PipelineStageConfig": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "color": { "type": "string", "description": "Hex colour, e.g. #3b82f6" },
+          "notifications": {
+            "type": "object",
+            "properties": {
+              "enabled": { "type": "boolean" },
+              "recipients": { "type": "array", "items": { "type": "string", "format": "email" } }
+            }
+          },
+          "approval": {
+            "type": "object",
+            "properties": {
+              "required": { "type": "boolean" },
+              "approvers": { "type": "array", "items": { "type": "string" }, "description": "Email addresses" }
+            }
+          },
+          "workflow": {
+            "type": "object",
+            "properties": {
+              "autoMoveAfterDays": { "type": "number" },
+              "sendEmailTemplate": {
+                "type": "string",
+                "enum": ["status-update", "interview-invite", "rejection", "offer-letter", ""]
+              }
+            }
+          }
+        }
+      },
+      "CreateStageDto": {
+        "type": "object",
+        "required": ["title", "color"],
+        "properties": {
+          "title": { "type": "string", "description": "Unique within job" },
+          "color": { "type": "string" },
+          "notifications": {
+            "type": "object",
+            "properties": {
+              "enabled": { "type": "boolean" },
+              "recipients": { "type": "array", "items": { "type": "string", "format": "email" } }
+            }
+          },
+          "approval": {
+            "type": "object",
+            "properties": {
+              "required": { "type": "boolean" },
+              "approvers": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "workflow": {
+            "type": "object",
+            "properties": {
+              "autoMoveAfterDays": { "type": "number" },
+              "sendEmailTemplate": { "type": "string" }
+            }
+          }
+        }
+      },
+      "Candidate": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "phone": { "type": "string" },
+          "location": { "type": "string" },
+          "summary": { "type": "string" },
+          "resume": { "type": "string", "format": "uri" },
+          "coverLetter": { "type": "string" },
+          "avatar": { "type": "string", "format": "uri" },
+          "skills": { "type": "array", "items": { "type": "string" } },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": "string" },
+          "rating": { "type": "number", "minimum": 1, "maximum": 5 },
+          "matchScore": { "type": "number", "minimum": 0, "maximum": 100 },
+          "status": { "$ref": "#/components/schemas/CandidateStatus" },
+          "source": { "$ref": "#/components/schemas/ApplicationSource" },
+          "currentStageId": { "type": "string" },
+          "previousStageId": { "type": "string" },
+          "jobId": { "type": "string" },
+          "job": { "$ref": "#/components/schemas/Job" },
+          "applicationId": { "type": "string" },
+          "pipelineId": { "type": "string" },
+          "approvalStatus": { "$ref": "#/components/schemas/ApprovalStatus" },
+          "activeApprovalId": { "type": "string" },
+          "experience": { "type": "array", "items": { "$ref": "#/components/schemas/CandidateExperience" } },
+          "education": { "type": "array", "items": { "$ref": "#/components/schemas/CandidateEducation" } },
+          "certifications": { "type": "array", "items": { "$ref": "#/components/schemas/CandidateCertification" } },
+          "appliedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CandidateExperience": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "company": { "type": "string" },
+          "startDate": { "type": "string" },
+          "endDate": { "type": "string", "description": "Year or \"Present\"" },
+          "description": { "type": "string" }
+        }
+      },
+      "CandidateEducation": {
+        "type": "object",
+        "properties": {
+          "degree": { "type": "string" },
+          "institution": { "type": "string" },
+          "year": { "type": "integer" }
+        }
+      },
+      "CandidateCertification": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "year": { "type": "integer" }
+        }
+      },
+      "PipelineTemplate": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "department": { "type": "string" },
+          "isActive": { "type": "boolean" },
+          "createdBy": { "type": "string" },
+          "stages": { "type": "array", "items": { "$ref": "#/components/schemas/PipelineStageConfig" } },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreatePipelineDto": {
+        "type": "object",
+        "required": ["name", "department", "stages"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "department": { "type": "string" },
+          "stages": { "type": "array", "items": { "$ref": "#/components/schemas/PipelineStageConfig" } }
+        }
+      },
+      "PipelineInstance": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "pipelineId": { "type": "string" },
+          "candidateId": { "type": "string" },
+          "jobId": { "type": "string" },
+          "currentStageId": { "type": "string" },
+          "status": { "type": "string", "enum": ["active", "completed", "rejected"] },
+          "stageHistory": { "type": "array", "items": { "$ref": "#/components/schemas/StageHistoryEntry" } },
+          "startedAt": { "type": "string", "format": "date-time" },
+          "completedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "StageHistoryEntry": {
+        "type": "object",
+        "properties": {
+          "stageId": { "type": "string" },
+          "stageName": { "type": "string" },
+          "enteredAt": { "type": "string", "format": "date-time" },
+          "exitedAt": { "type": "string", "format": "date-time" },
+          "action": { "type": "string", "enum": ["moved", "approved", "rejected", "auto-moved"] },
+          "performedBy": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      },
+      "ApprovalRequest": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "candidateId": { "type": "string" },
+          "applicationId": { "type": "string" },
+          "jobId": { "type": "string" },
+          "pipelineId": { "type": "string" },
+          "stageId": { "type": "string", "description": "Target stage" },
+          "fromStageId": { "type": "string", "description": "Current stage" },
+          "requestedBy": { "type": "string" },
+          "assignedTo": { "type": "array", "items": { "type": "string" }, "description": "Email addresses" },
+          "status": { "$ref": "#/components/schemas/ApprovalStatus" },
+          "comments": { "type": "array", "items": { "$ref": "#/components/schemas/ApprovalComment" } },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "resolvedAt": { "type": "string", "format": "date-time" },
+          "resolvedBy": { "type": "string" }
+        }
+      },
+      "CreateApprovalDto": {
+        "type": "object",
+        "required": [
+          "candidateId",
+          "applicationId",
+          "jobId",
+          "pipelineId",
+          "stageId",
+          "fromStageId",
+          "requestedBy",
+          "assignedTo"
+        ],
+        "properties": {
+          "candidateId": { "type": "string" },
+          "applicationId": { "type": "string" },
+          "jobId": { "type": "string" },
+          "pipelineId": { "type": "string" },
+          "stageId": { "type": "string" },
+          "fromStageId": { "type": "string" },
+          "requestedBy": { "type": "string" },
+          "assignedTo": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "ApprovalComment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "authorName": { "type": "string" },
+          "text": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ActivityEntry": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["application_received", "stage_changed", "note_added", "status_changed", "attachment_uploaded"]
+          },
+          "message": { "type": "string" },
+          "actorName": { "type": "string" },
+          "candidateName": { "type": "string" },
+          "fromStage": { "type": "string" },
+          "toStage": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Attachment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "mimeType": { "type": "string" },
+          "size": { "type": "integer", "description": "File size in bytes" },
+          "uploadedAt": { "type": "string", "format": "date-time" },
+          "uploadedBy": { "type": "string" }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "content": { "type": "string" },
+          "isRead": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "JobAnalytics": {
+        "type": "object",
+        "properties": {
+          "views": { "type": "integer" },
+          "applicationsOverTime": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": { "type": "string", "format": "date" },
+                "count": { "type": "integer" }
+              }
+            }
+          },
+          "sourceBreakdown": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source": { "$ref": "#/components/schemas/ApplicationSource" },
+                "count": { "type": "integer" },
+                "percentage": { "type": "number" }
+              }
+            }
+          },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "total": { "type": "integer" },
+              "pending": { "type": "integer" },
+              "accepted": { "type": "integer" },
+              "rejected": { "type": "integer" }
+            }
+          }
+        }
+      },
+      "DashboardStats": {
+        "type": "object",
+        "properties": {
+          "activeJobs": { "type": "integer" },
+          "totalCandidates": { "type": "integer" },
+          "inPipeline": { "type": "integer" },
+          "hired": { "type": "integer" },
+          "pipelineDistribution": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "stage": { "type": "string" },
+                "count": { "type": "integer" }
+              }
+            }
+          },
+          "candidatesBySource": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source": { "$ref": "#/components/schemas/ApplicationSource" },
+                "count": { "type": "integer" }
+              }
+            }
+          },
+          "recentJobs": { "type": "array", "items": { "$ref": "#/components/schemas/Job" } }
+        }
+      },
+      "NamedEntity": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Jobs", "description": "Job management" },
+    { "name": "Job Templates", "description": "Job template management" },
+    { "name": "Applications", "description": "Job application management" },
+    { "name": "Pipeline Stages", "description": "Pipeline stage configuration per job" },
+    { "name": "Candidates", "description": "Candidate management" },
+    { "name": "Pipelines", "description": "Pipeline template management" },
+    { "name": "Approvals", "description": "Approval request management" },
+    { "name": "Notifications", "description": "User notifications" },
+    { "name": "Dashboard", "description": "Dashboard overview" },
+    { "name": "Reports", "description": "Analytics and reporting" },
+    { "name": "Reference Data", "description": "Departments and roles" }
+  ]
+}

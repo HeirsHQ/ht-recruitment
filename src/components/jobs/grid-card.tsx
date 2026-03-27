@@ -27,11 +27,11 @@ export const GridCard = ({ job }: Props) => {
         <p className="text-lg font-bold">{job.title}</p>
         <div className="flex items-center gap-x-2">
           <Building2 className="size-4" />
-          <span className="text-sm text-gray-600">{job.company}</span>
+          <span className="text-sm text-gray-600">{job.company?.name}</span>
         </div>
         <div className="flex items-center gap-x-2">
           <Briefcase className="size-4" />
-          <span className="text-sm text-gray-600">{job.department}</span>
+          <span className="text-sm text-gray-600">{job.department?.name}</span>
         </div>
         <div className="flex items-center gap-x-2">
           <DollarSign className="size-4" />

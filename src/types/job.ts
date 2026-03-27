@@ -1,3 +1,5 @@
+import type { Company, Department } from "./company";
+
 export type JobStatus = "open" | "closed" | "cancelled" | "pending" | "in progress";
 export type JobType = "full-time" | "part-time" | "contract";
 export type WorkType = "on-site" | "hybrid" | "remote";
@@ -31,8 +33,8 @@ export interface Job {
   salaryMax?: number;
   currency?: string;
   role?: string;
-  department?: string;
-  company?: string;
+  department?: Department;
+  company?: Company;
   requirements?: string[];
   benefits?: string[];
   closedAt?: Date;
@@ -44,6 +46,10 @@ export interface JobApplication {
   jobId: string;
   applicant: JobApplicant;
   status: string;
+  workflow: PipelineStageConfig;
+  matchScore: number;
+  source: string;
+  appliedAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,6 +61,7 @@ export interface JobApplicant {
   resume: string;
   coverLetter?: string;
   appliedAt: Date;
+  skills: string[];
 }
 
 export interface PipelineStageConfig {
@@ -102,8 +109,15 @@ export interface CreateJobDto {
   salaryMax?: number;
   currency?: string;
   role?: string;
-  department?: string;
-  company?: string;
+  departmentId?: string;
+  companyId?: string;
   requirements?: string[];
   benefits?: string[];
+}
+
+export interface JobTemplate {
+  id: string;
+  title: string;
+  department: Department;
+  jobType: JobType;
 }

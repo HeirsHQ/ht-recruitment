@@ -8,7 +8,6 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import Link from "next/link";
 import {
-  ArrowRightLeft,
   BarChart3,
   Briefcase,
   Building2,
@@ -16,42 +15,50 @@ import {
   ExternalLink,
   Eye,
   Globe,
-  KanbanIcon,
-  Lightbulb,
-  List,
   MapPin,
-  MessageSquare,
   Plus,
-  Sparkles,
-  Target,
   TrendingUp,
-  UserPlus,
   Users,
   DollarSign,
   ListFilter,
+  LayoutGrid,
+  LayoutList,
+  Award,
+  CircleCheckBig,
+  SquareCheckBig,
+  PencilLine,
+  Trash2,
 } from "lucide-react";
 
-import { Kanban, KanbanList, TabPanel, type KanbanColumnConfig, type KanbanDragEndEvent } from "@/components/shared";
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { JobApplication, PipelineStageConfig } from "@/types/job";
+import { createApplicationColumns } from "@/config/columns/application";
 import { StageDialog } from "@/components/jobs/stage-dialog";
 import KanbanCard from "@/components/jobs/kanban-card";
+import { cn, formatSalary, paginate } from "@/lib";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn, formatSalary } from "@/lib";
+import {
+  DataTable,
+  Kanban,
+  type KanbanColumnConfig,
+  type KanbanDragEndEvent,
+  Pagination,
+  TabPanel,
+} from "@/components/shared";
 
 import { MOCK_JOBS } from "@/__mock__/database";
 
 const tabs = [
-  { label: "Overview", value: "overview" },
-  { label: "Applicants", value: "applicants" },
-  { label: "Activities", value: "activities" },
+  { label: "Candidates", value: "candidates" },
+  { label: "Summary", value: "summary" },
   { label: "AI Recommendations", value: "ai-recommendations" },
-  { label: "Sources", value: "sources" },
+  { label: "Activities", value: "activities" },
   { label: "Attachments", value: "attachments" },
-  { label: "Analytics", value: "analytics" },
-  { label: "Others", value: "others" },
+  { label: "Sources", value: "sources" },
+  // { label: "Analytics", value: "analytics" },
+  // { label: "Others", value: "others" },
 ];
 
 const DEFAULT_STAGES: PipelineStageConfig[] = [
@@ -98,16 +105,9 @@ const DEFAULT_STAGES: PipelineStageConfig[] = [
 ];
 
 const views = [
-  { label: "Kanban", value: "kanban", icon: KanbanIcon },
-  { label: "List", value: "list", icon: List },
+  { label: "Kanban", value: "kanban", icon: LayoutGrid },
+  { label: "List", value: "list", icon: LayoutList },
 ];
-
-const ACTIVITY_TYPES = {
-  application: { icon: UserPlus, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950" },
-  "stage-change": { icon: ArrowRightLeft, color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-950" },
-  comment: { icon: MessageSquare, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950" },
-  view: { icon: Eye, color: "text-gray-500", bg: "bg-gray-50 dark:bg-gray-800" },
-} as const;
 
 const SOURCE_COLORS: Record<string, string> = {
   LinkedIn: "#0a66c2",
@@ -122,6 +122,23 @@ const applicationsChartConfig: ChartConfig = {
   applications: { label: "Applications", color: "#6366f1" },
 };
 
+const getScoreBadge = (score: number) => {
+  const variant = (score: number) => {
+    switch (true) {
+      case score > 0 && score <= 45:
+        return "bg-red-100 text-red-500";
+      case score > 45 && score <= 75:
+        return "bg-yellow-100 text-yellow-500";
+      case score > 75:
+        return "bg-green-100 text-green-500";
+    }
+  };
+
+  return <Badge className={cn("text-xs font-medium", variant(score))}>{score}% match</Badge>;
+};
+
+const PAGE_SIZE = 10;
+
 const Page = () => {
   const id = useParams().id as string;
   const job = MOCK_JOBS.find((job) => job.id === id);
@@ -132,6 +149,7 @@ const Page = () => {
   const [activeTab, setActiveTab] = useState(tabs[0].value);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [view, setView] = useState("kanban");
+  const [page, setPage] = useState(0);
 
   const columns = useMemo(() => stages.map((s) => ({ id: s.id, title: s.title, color: s.color })), [stages]);
 
@@ -143,7 +161,7 @@ const Page = () => {
   }, [applications]);
 
   const activities = useMemo(() => {
-    const items: { id: string; type: keyof typeof ACTIVITY_TYPES; message: string; date: Date }[] = [];
+    const items: { id: string; type: string; message: string; date: Date }[] = [];
     applications.forEach((app) => {
       items.push({
         id: `${app.id}-applied`,
@@ -188,14 +206,11 @@ const Page = () => {
   }, [applications]);
 
   const topCandidates = useMemo(
-    () =>
-      applications.slice(0, 3).map((app) => {
-        const hash = app.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const matchScore = 70 + (hash % 26);
-        return { ...app, matchScore };
-      }),
+    () => [...applications].sort((a, b) => b.matchScore - a.matchScore).slice(0, 5),
     [applications],
   );
+
+  const paginated = paginate(applications, page, PAGE_SIZE, applications.length);
 
   if (!job) {
     return (
@@ -219,7 +234,7 @@ const Page = () => {
     }
 
     setApplications((prev) =>
-      prev.map((a) => (a.id === item.id ? { ...a, status: toStatus as JobApplication["status"] } : a)),
+      prev.map((a) => (a.id === item.id ? { ...a, status: toStatus, workflow: targetStage ?? a.workflow } : a)),
     );
 
     if (targetStage?.notifications.enabled) {
@@ -274,10 +289,15 @@ const Page = () => {
           <p className="text-sm text-gray-600">View job information, status and administrative actions</p>
         </div>
         <div className="flex items-center gap-x-4">
-          <Button size="sm" variant="ghost">
-            Edit Details
+          <Button asChild size="sm" variant="secondary">
+            <Link href={`/jobs/${id}/edit`}>
+              <PencilLine className="size-4" /> Edit Details
+            </Link>
           </Button>
-          <Button size="sm">Delete Job</Button>
+          <Button size="sm">
+            <Trash2 className="size-4" />
+            Delete Job
+          </Button>
         </div>
       </div>
       <motion.div
@@ -290,11 +310,11 @@ const Page = () => {
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="flex items-center gap-x-2">
             <Building2 className="size-4" />
-            <span className="text-sm text-gray-600">{job.company}</span>
+            <span className="text-sm text-gray-600">{job.company?.name}</span>
           </div>
           <div className="flex items-center gap-x-2">
             <Briefcase className="size-4" />
-            <span className="text-sm text-gray-600">{job.department}</span>
+            <span className="text-sm text-gray-600">{job.department?.name}</span>
           </div>
           <div className="flex items-center gap-x-2">
             <DollarSign className="size-4" />
@@ -334,7 +354,7 @@ const Page = () => {
             </button>
           ))}
         </div>
-        <TabPanel selected={activeTab} value="overview">
+        <TabPanel selected={activeTab} value="summary">
           <div className="space-y-6">
             {job.description && (
               <div className="space-y-2 rounded-xl border p-4">
@@ -364,15 +384,12 @@ const Page = () => {
             )}
           </div>
         </TabPanel>
-        <TabPanel selected={activeTab} value="applicants">
+        <TabPanel selected={activeTab} value="candidates">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-x-4">
-                <Button variant="outline" size="sm" onClick={() => setAddDialogOpen(true)}>
-                  <Plus className="size-3.5" />
-                  Add status
-                </Button>
-              </div>
+              <p className="text-sm font-medium">
+                {applications.length} {applications.length > 1 ? "candidates" : "candidtate"}
+              </p>
               <div className="flex items-center gap-x-4">
                 <motion.div className="flex h-8 items-center rounded-md bg-gray-100 p-1 dark:bg-neutral-800">
                   {views.map(({ icon: Icon, value }, index) => (
@@ -417,17 +434,10 @@ const Page = () => {
                 renderCard={(application) => <KanbanCard application={application} />}
               />
             ) : (
-              <KanbanList
-                items={applications}
-                columns={columns}
-                onDragEnd={handleDragEnd}
-                onColumnEdit={(id) => {
-                  const stage = stages.find((s) => s.id === id);
-                  if (stage) setEditingStage(stage);
-                }}
-                onColumnDelete={handleDeleteStage}
-                renderCard={(application) => <KanbanCard application={application} />}
-              />
+              <div className="w-full space-y-4">
+                <DataTable columns={createApplicationColumns()} data={paginated} />
+                <Pagination onPageChange={setPage} page={page} pageSize={PAGE_SIZE} total={applications.length} />
+              </div>
             )}
           </div>
         </TabPanel>
@@ -516,21 +526,27 @@ const Page = () => {
             </div>
             <div className="space-y-1">
               {activities.map((activity) => {
-                const config = ACTIVITY_TYPES[activity.type];
-                const Icon = config.icon;
                 return (
                   <div
                     key={activity.id}
-                    className="flex items-start gap-x-3 rounded-lg p-3 transition-colors hover:bg-gray-50 dark:hover:bg-neutral-800/50"
+                    className="flex items-start gap-x-3 rounded-lg border p-3 transition-colors hover:bg-gray-50 dark:hover:bg-neutral-800/50"
                   >
-                    <div className={cn("mt-0.5 grid size-8 shrink-0 place-items-center rounded-full", config.bg)}>
-                      <Icon className={cn("size-4", config.color)} />
+                    <div
+                      className={cn(
+                        "mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-blue-100 text-blue-500",
+                      )}
+                    >
+                      <SquareCheckBig className="size-4" />
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 space-y-1">
                       <p className="text-sm text-gray-700 dark:text-gray-300">{activity.message}</p>
-                      <p className="text-xs text-gray-400">
-                        {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
-                      </p>
+                      <div className="flex items-center gap-x-2">
+                        <p className="text-xs text-gray-400">{format(new Date(activity.date), "MMM dd, yyyy")}</p>
+                        <span className="size-1 rounded-full bg-gray-400"></span>
+                        <p className="text-xs text-gray-400">
+                          {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 );
@@ -548,13 +564,13 @@ const Page = () => {
                 <BarChart3 className="size-5 text-gray-500" />
                 <h3 className="font-semibold">Application Sources</h3>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-6">
                 {sources.map((source) => (
-                  <div key={source.name} className="space-y-1.5">
+                  <div key={source.name} className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-x-2">
                         <span
-                          className="size-2.5 rounded-full"
+                          className="size-2 rounded-full"
                           style={{ backgroundColor: SOURCE_COLORS[source.name] ?? "#6b7280" }}
                         />
                         <span className="text-gray-700 dark:text-gray-300">{source.name}</span>
@@ -606,81 +622,47 @@ const Page = () => {
           </div>
         </TabPanel>
         <TabPanel selected={activeTab} value="ai-recommendations">
-          <div className="space-y-6">
-            <div className="flex items-center gap-x-2 rounded-xl border border-purple-200 bg-purple-50 p-4 dark:border-purple-900 dark:bg-purple-950/50">
-              <Sparkles className="size-5 shrink-0 text-purple-500" />
-              <p className="text-sm text-purple-700 dark:text-purple-300">
-                AI-powered insights based on your job posting and application data.
-              </p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Top Candidates by AI Match</h3>
+              <div></div>
             </div>
-            <div className="grid gap-4 lg:grid-cols-2">
-              <div className="space-y-3 rounded-xl border p-4">
-                <div className="flex items-center gap-x-2">
-                  <Lightbulb className="size-5 text-amber-500" />
-                  <h3 className="font-semibold">Job Posting Insights</h3>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <li className="flex items-start gap-x-2">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-amber-400" />
-                    Consider adding salary range visibility to increase applications by up to 30%.
-                  </li>
-                  <li className="flex items-start gap-x-2">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-amber-400" />
-                    Your job description could benefit from more specific technical requirements.
-                  </li>
-                  <li className="flex items-start gap-x-2">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-amber-400" />
-                    Adding remote/hybrid flexibility details may attract 40% more candidates.
-                  </li>
-                </ul>
+            {applications.length === 0 ? (
+              <div className="grid min-h-50 place-items-center rounded-xl border border-dashed">
+                <p className="py-8 text-center text-sm text-gray-400">No applications to analyze yet.</p>
               </div>
-              <div className="space-y-3 rounded-xl border p-4">
-                <div className="flex items-center gap-x-2">
-                  <Target className="size-5 text-blue-500" />
-                  <h3 className="font-semibold">Pipeline Optimization</h3>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <li className="flex items-start gap-x-2">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-blue-400" />
-                    {stats.pending > 5
-                      ? `${stats.pending} candidates pending review — consider batch processing to reduce time-to-hire.`
-                      : "Pipeline is moving efficiently. Keep up the review cadence."}
-                  </li>
-                  <li className="flex items-start gap-x-2">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-blue-400" />
-                    {stats.rejected > stats.accepted
-                      ? "High rejection rate detected. Review screening criteria to attract more qualified candidates."
-                      : "Acceptance-to-rejection ratio looks healthy."}
-                  </li>
-                  <li className="flex items-start gap-x-2">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-blue-400" />
-                    Average time in pipeline stages could be reduced with automated scheduling.
-                  </li>
-                </ul>
-              </div>
-              <div className="space-y-3 rounded-xl border p-4 lg:col-span-2">
-                <div className="flex items-center gap-x-2">
-                  <Users className="size-5 text-green-500" />
-                  <h3 className="font-semibold">Top Candidate Matches</h3>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {topCandidates.map((app) => (
-                    <div key={app.id} className="flex items-center gap-x-3 rounded-lg border p-3">
-                      <div className="grid size-10 shrink-0 place-items-center rounded-full bg-green-50 text-sm font-semibold text-green-600 dark:bg-green-950 dark:text-green-400">
-                        {app.matchScore}%
+            ) : (
+              <div className="space-y-2">
+                {topCandidates.map((app) => (
+                  <div
+                    key={app.id}
+                    className="flex items-center gap-x-4 rounded-lg border p-3 transition-colors hover:bg-gray-50 dark:hover:bg-neutral-800/50"
+                  >
+                    <div className="grid size-10 place-items-center rounded-md bg-purple-100">
+                      <Award className="size-6 text-purple-400" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-x-4">
+                        <p className="text-sm font-medium">{app.applicant.name}</p>
+                        {getScoreBadge(app.matchScore)}
                       </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{app.applicant.name}</p>
-                        <p className="truncate text-xs text-gray-400">{app.applicant.email}</p>
+                      <div className="flex items-center gap-x-2">
+                        <p className="text-xs text-gray-600 capitalize">{app.workflow.title}</p>
+                        <span className="size-1 rounded-full bg-gray-600"></span>
+                        <p className="text-xs text-gray-600">{app.source}</p>
+                      </div>
+                      <div className="flex items-center gap-x-2">
+                        {app.applicant.skills.map((skill, index) => (
+                          <Badge className={"bg-blue-100 text-xs text-blue-500"} key={index}>
+                            <CircleCheckBig className="size-4" /> {skill}
+                          </Badge>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                  {applications.length === 0 && (
-                    <p className="col-span-3 py-4 text-center text-sm text-gray-400">No applications to analyze yet.</p>
-                  )}
-                </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            )}
           </div>
         </TabPanel>
         <TabPanel selected={activeTab} value="attachments">

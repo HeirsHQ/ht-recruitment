@@ -62,11 +62,9 @@ const Page = () => {
   const [activeTab, setActiveTab] = useState(tabs[0].value);
   const [view, setView] = useState("kanban");
 
-  // Approval dialog state
   const [reviewingApproval, setReviewingApproval] = useState<ApprovalRequest | null>(null);
   const [reviewingCandidate, setReviewingCandidate] = useState<Candidate | null>(null);
 
-  // Move confirmation dialog state
   const [pendingMove, setPendingMove] = useState<{
     candidate: Candidate;
     targetStage: PipelineStageConfig;
@@ -212,7 +210,6 @@ const Page = () => {
           </Button>
         </Link>
       </div>
-
       <div className="w-full space-y-4">
         <div className="flex w-full items-center rounded-md bg-gray-100 p-1 dark:bg-neutral-800">
           {tabs.map((tab) => (
@@ -235,8 +232,6 @@ const Page = () => {
             </button>
           ))}
         </div>
-
-        {/* Overview Tab */}
         <TabPanel selected={activeTab} value="overview">
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
@@ -245,7 +240,7 @@ const Page = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-x-2 text-gray-600 dark:text-gray-400">
                     <Building2 className="size-4 shrink-0" />
-                    <span>{workflow.department}</span>
+                    <span>{workflow.department.name}</span>
                   </div>
                   <div className="flex items-center gap-x-2 text-gray-600 dark:text-gray-400">
                     <User className="size-4 shrink-0" />
@@ -257,7 +252,6 @@ const Page = () => {
                   </div>
                 </div>
               </div>
-
               <div className="space-y-3 rounded-xl border p-4">
                 <h3 className="font-semibold">Pipeline Stages</h3>
                 <div className="space-y-2">
@@ -284,7 +278,6 @@ const Page = () => {
                 </div>
               </div>
             </div>
-
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col justify-between rounded-xl border p-4">
@@ -325,8 +318,6 @@ const Page = () => {
             </div>
           </div>
         </TabPanel>
-
-        {/* Pipeline Tab */}
         <TabPanel selected={activeTab} value="pipeline">
           <div className="space-y-4">
             <div className="flex items-center justify-end">
@@ -350,7 +341,6 @@ const Page = () => {
                 ))}
               </motion.div>
             </div>
-
             {view === "kanban" ? (
               <Kanban
                 items={kanbanItems}
@@ -368,8 +358,6 @@ const Page = () => {
             )}
           </div>
         </TabPanel>
-
-        {/* Approval Queue Tab */}
         <TabPanel selected={activeTab} value="approvals">
           <div className="space-y-4">
             <div className="rounded-xl border">
@@ -446,8 +434,6 @@ const Page = () => {
           </div>
         </TabPanel>
       </div>
-
-      {/* Move candidate approval dialog */}
       <MoveCandidateDialog
         open={!!pendingMove}
         onOpenChange={(open) => {

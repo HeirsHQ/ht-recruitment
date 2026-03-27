@@ -40,6 +40,9 @@ importers:
       framer-motion:
         specifier: ^12.35.2
         version: 12.35.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      handlebars:
+        specifier: ^4.7.9
+        version: 4.7.9
       lucide-react:
         specifier: ^0.577.0
         version: 0.577.0(react@19.2.3)
@@ -3117,6 +3120,12 @@ packages:
       { integrity: sha512-gGgrVCoDKlIZ8fIqXBBb0pPKqDgki0Z/FSKNiQzSGj2uEYHr1tq5wmBegGwJx6QB5S5cM0khSBpi/JFHMCvsmQ== }
     engines: { node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0 }
 
+  handlebars@4.7.9:
+    resolution:
+      { integrity: sha512-4E71E0rpOaQuJR2A3xDZ+GM1HyWYv1clR58tC8emQNeQe3RH7MAzSbat+V0wG78LQBo6m6bzSG/L4pBuCsgnUQ== }
+    engines: { node: ">=0.4.7" }
+    hasBin: true
+
   has-bigints@1.1.0:
     resolution:
       { integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg== }
@@ -3822,6 +3831,10 @@ packages:
     resolution:
       { integrity: sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg== }
     engines: { node: ">= 0.6" }
+
+  neo-async@2.6.2:
+    resolution:
+      { integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw== }
 
   next-themes@0.4.6:
     resolution:
@@ -4811,6 +4824,12 @@ packages:
     engines: { node: ">=14.17" }
     hasBin: true
 
+  uglify-js@3.19.3:
+    resolution:
+      { integrity: sha512-v3Xu+yuwBXisp6QYTcH4UbH+xYJXqnq2m/LtQVWKWzYc1iehYnLixoQDN9FH6/j9/oybfd6W9Ghwkl8+UMKTKQ== }
+    engines: { node: ">=0.8.0" }
+    hasBin: true
+
   unbox-primitive@1.1.0:
     resolution:
       { integrity: sha512-nWJ91DjeOkej/TA8pXQ3myruKpKEYgqvpw9lz4OPHj/NWFNluYrjbz9j01CJ8yKQd2g4jFoOkINCTW2I5LEEyw== }
@@ -4953,6 +4972,10 @@ packages:
     resolution:
       { integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA== }
     engines: { node: ">=0.10.0" }
+
+  wordwrap@1.0.0:
+    resolution:
+      { integrity: sha512-gvVzJFlPycKc5dZN4yPkP8w7Dc37BtP1yczEneOb4uq34pXZcvrtRTmWV8W+Ume+XCxKgbjM+nevkyFPMybd4Q== }
 
   wrap-ansi@6.2.0:
     resolution:
@@ -7748,6 +7771,15 @@ snapshots:
 
   graphql@16.13.1: {}
 
+  handlebars@4.7.9:
+    dependencies:
+      minimist: 1.2.8
+      neo-async: 2.6.2
+      source-map: 0.6.1
+      wordwrap: 1.0.0
+    optionalDependencies:
+      uglify-js: 3.19.3
+
   has-bigints@1.1.0: {}
 
   has-flag@4.0.0: {}
@@ -8226,6 +8258,8 @@ snapshots:
   natural-compare@1.4.0: {}
 
   negotiator@1.0.0: {}
+
+  neo-async@2.6.2: {}
 
   next-themes@0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
     dependencies:
@@ -9183,6 +9217,9 @@ snapshots:
 
   typescript@5.9.3: {}
 
+  uglify-js@3.19.3:
+    optional: true
+
   unbox-primitive@1.1.0:
     dependencies:
       call-bound: 1.0.4
@@ -9337,6 +9374,8 @@ snapshots:
       isexe: 3.1.5
 
   word-wrap@1.2.5: {}
+
+  wordwrap@1.0.0: {}
 
   wrap-ansi@6.2.0:
     dependencies:

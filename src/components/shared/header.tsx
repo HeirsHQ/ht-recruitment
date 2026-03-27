@@ -52,6 +52,8 @@ export const Header = () => {
 
   const handleToggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
+  const unread = notifications.filter((n) => !n.isRead).length;
+
   return (
     <motion.header
       className="bg-layout-background flex h-19 w-full items-center justify-between px-4"
@@ -71,9 +73,9 @@ export const Header = () => {
           <PopoverTrigger asChild>
             <button className="relative grid aspect-square size-9 place-items-center rounded border bg-white dark:bg-neutral-800">
               <Bell className="size-4" />
-              {notifications.length > 0 && (
+              {unread > 0 && (
                 <span className="absolute -top-1 -right-1 grid size-4.5 place-items-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                  {notifications.length > 9 ? "9+" : notifications.length}
+                  {unread > 9 ? "9+" : unread}
                 </span>
               )}
             </button>
