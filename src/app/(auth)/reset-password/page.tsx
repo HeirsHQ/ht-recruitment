@@ -54,6 +54,7 @@ const Page = () => {
             id="password"
             type="password"
             placeholder="Enter new password"
+            maxLength={128}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -65,6 +66,7 @@ const Page = () => {
             id="confirm-password"
             type="password"
             placeholder="Confirm new password"
+            maxLength={128}
             value={confirmPassword}
             onChange={(e) => {
               setConfirmPassword(e.target.value);
