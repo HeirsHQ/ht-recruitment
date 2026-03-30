@@ -353,6 +353,7 @@ const Page = () => {
                 onChange={(e) => setNoteInput(e.target.value)}
                 placeholder="Add a note about this applicant..."
                 rows={3}
+                maxLength={2000}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                     e.preventDefault();

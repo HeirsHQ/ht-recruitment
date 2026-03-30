@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { Lock } from "lucide-react";
 
-import { isValidEmail } from "@/lib/sanitize";
+import { isValidEmail, sanitizeText } from "@/lib/sanitize";
 import { OtpInput } from "@/components/shared/otp-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,17 +24,19 @@ const Page = () => {
     e.preventDefault();
     setEmailError("");
 
-    if (!isValidEmail(email)) {
+    const cleanEmail = sanitizeText(email);
+    if (!isValidEmail(cleanEmail)) {
       setEmailError("Please enter a valid email address");
       return;
     }
 
-    // TODO: call API to send OTP to email
+    // TODO: call API to send OTP to cleanEmail
     setStep("otp");
   };
 
   const handleVerifyOtp = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!/^\d{6}$/.test(otp)) return;
     // TODO: call API to verify OTP
     router.push("/reset-password");
   };
@@ -71,6 +73,7 @@ const Page = () => {
                   id="email"
                   type="email"
                   placeholder="Enter your email"
+                  maxLength={254}
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);

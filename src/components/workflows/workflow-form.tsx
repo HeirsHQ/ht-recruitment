@@ -71,6 +71,7 @@ export function WorkflowForm({ initialData, onSave, onCancel }: WorkflowFormProp
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Engineering Hiring Pipeline"
+              maxLength={200}
             />
           </div>
           <div className="grid gap-1.5">
@@ -98,6 +99,7 @@ export function WorkflowForm({ initialData, onSave, onCancel }: WorkflowFormProp
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe the purpose of this workflow..."
             rows={3}
+            maxLength={2000}
           />
         </div>
         <div className="flex items-center justify-between">

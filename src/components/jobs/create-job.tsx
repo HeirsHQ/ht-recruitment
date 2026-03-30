@@ -29,8 +29,8 @@ const SALARY_FREQUENCIES = [
 ];
 
 const validationSchema = Yup.object<CreateJobDto>({
-  title: Yup.string().trim().required("Position name is required"),
-  description: Yup.string().trim(),
+  title: Yup.string().trim().required("Position name is required").max(200, "Title is too long"),
+  description: Yup.string().trim().max(5000, "Description is too long"),
   jobType: Yup.string().required("Contract type is required"),
   workType: Yup.string(),
   experienceType: Yup.string(),
@@ -185,6 +185,7 @@ export function CreateJob({ job: existingJob }: CreateJobProps = {}) {
           <Input
             id="title"
             name="title"
+            maxLength={200}
             value={formik.values.title}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -220,6 +221,7 @@ export function CreateJob({ job: existingJob }: CreateJobProps = {}) {
               name="headcount"
               type="number"
               min={1}
+              max={1000}
               value={formik.values.headcount ?? ""}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
@@ -349,6 +351,7 @@ export function CreateJob({ job: existingJob }: CreateJobProps = {}) {
           <Textarea
             id="description"
             name="description"
+            maxLength={5000}
             value={formik.values.description ?? ""}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -364,6 +367,7 @@ export function CreateJob({ job: existingJob }: CreateJobProps = {}) {
           <Textarea
             id="responsibilities"
             name="responsibilitiesText"
+            maxLength={5000}
             value={formik.values.responsibilitiesText}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -379,6 +383,7 @@ export function CreateJob({ job: existingJob }: CreateJobProps = {}) {
           <Textarea
             id="requirements"
             name="requirementsText"
+            maxLength={5000}
             value={formik.values.requirementsText}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}

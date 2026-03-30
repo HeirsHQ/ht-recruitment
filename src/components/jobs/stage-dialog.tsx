@@ -75,7 +75,7 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
   const [emailTemplate, setEmailTemplate] = useState(initial?.workflow.sendEmailTemplate ?? "none");
 
   const handleAddRecipient = () => {
-    const email = recipientInput.trim().toLowerCase();
+    const email = sanitizeText(recipientInput).toLowerCase();
     setRecipientError("");
     if (!email) {
       toast.error("Please enter an email address");
@@ -94,7 +94,7 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
   };
 
   const handleAddApprover = () => {
-    const email = approverInput.trim().toLowerCase();
+    const email = sanitizeText(approverInput).toLowerCase();
     setApproverError("");
     if (!email) {
       toast.error("Please enter an email address");
@@ -130,7 +130,9 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
       },
       workflow: workflowEnabled
         ? {
-            autoMoveAfterDays: autoMoveDays ? parseInt(autoMoveDays, 10) || undefined : undefined,
+            autoMoveAfterDays: autoMoveDays
+              ? Math.min(Math.max(parseInt(autoMoveDays, 10) || 0, 1), 365) || undefined
+              : undefined,
             sendEmailTemplate: emailTemplate !== "none" ? emailTemplate : undefined,
           }
         : {},
@@ -155,7 +157,7 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
           <div className="space-y-3">
             <div className="grid gap-1.5">
               <label className="text-sm font-medium">Status name</label>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Screening" />
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Screening" maxLength={100} />
             </div>
             <div className="grid gap-1.5">
               <label className="text-sm font-medium">Color</label>
@@ -290,6 +292,7 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
                   <Input
                     type="number"
                     min={1}
+                    max={365}
                     value={autoMoveDays}
                     onChange={(e) => setAutoMoveDays(e.target.value)}
                     placeholder="Leave empty to disable"

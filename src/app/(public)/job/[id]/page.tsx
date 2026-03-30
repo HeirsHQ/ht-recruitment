@@ -28,7 +28,7 @@ import { cn, formatSalary } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { sanitizeText } from "@/lib/sanitize";
+import { sanitizeText, isSafeUrl } from "@/lib/sanitize";
 import { Navbar } from "@/components/shared";
 import type { ApplyDto } from "@/types";
 
@@ -71,14 +71,23 @@ const initialValues: ApplyDto = {
 };
 
 const schema = Yup.object({
-  fullName: Yup.string().required("Full name is required"),
+  fullName: Yup.string().required("Full name is required").max(100, "Full name is too long"),
   email: Yup.string()
     .required("Email is required")
+    .max(254, "Email is too long")
     .matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email address"),
   phone: Yup.string()
     .required("Phone number is required")
     .matches(/^(?:\+?234|0)[0-9]{10}$/, "Invalid phone number"),
-  coverLetter: Yup.string().required("Cover letter is required"),
+  coverLetter: Yup.string().required("Cover letter is required").max(5000, "Cover letter is too long"),
+  linkedInUrl: Yup.string()
+    .max(500, "URL is too long")
+    .test("safe-url", "Invalid URL", (value) => {
+      if (!value) return true;
+      return isSafeUrl(value);
+    }),
+  summary: Yup.string().max(2000, "Summary is too long"),
+  location: Yup.string().max(200, "Location is too long"),
   resumeFile: Yup.mixed()
     .required("Resume is required")
     .test("fileType", "Only PDF files are accepted", (value) => {
@@ -137,7 +146,7 @@ const Page = () => {
   });
 
   const addSkill = () => {
-    const trimmed = skillInput.trim();
+    const trimmed = sanitizeText(skillInput);
     if (!trimmed) return;
     if (formik.values.skills.includes(trimmed)) {
       toast.error("Skill already added");
@@ -505,6 +514,7 @@ const Page = () => {
                         id="fullName"
                         name="fullName"
                         placeholder="John Doe"
+                        maxLength={100}
                         value={formik.values.fullName}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
@@ -521,6 +531,7 @@ const Page = () => {
                         name="email"
                         type="email"
                         placeholder="john@example.com"
+                        maxLength={254}
                         value={formik.values.email}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
@@ -537,6 +548,7 @@ const Page = () => {
                         name="phoneNumber"
                         type="tel"
                         placeholder="+234 801 234 5678"
+                        maxLength={20}
                         value={formik.values.phoneNumber}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
@@ -552,6 +564,7 @@ const Page = () => {
                         id="location"
                         name="location"
                         placeholder="Lagos, Nigeria"
+                        maxLength={200}
                         value={formik.values.location}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
@@ -569,6 +582,7 @@ const Page = () => {
                       name="linkedInUrl"
                       type="url"
                       placeholder="https://linkedin.com/in/johndoe"
+                      maxLength={500}
                       value={formik.values.linkedInUrl}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
@@ -584,6 +598,7 @@ const Page = () => {
                       id="summary"
                       name="summary"
                       placeholder="Brief overview of your professional background..."
+                      maxLength={2000}
                       value={formik.values.summary}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
@@ -600,6 +615,7 @@ const Page = () => {
                       id="coverLetter"
                       name="coverLetter"
                       placeholder="Tell us why you're a great fit for this role..."
+                      maxLength={5000}
                       value={formik.values.coverLetter}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
@@ -615,6 +631,7 @@ const Page = () => {
                     <div className="flex items-center gap-x-3">
                       <Input
                         placeholder="e.g. React, TypeScript, Node.js"
+                        maxLength={50}
                         value={skillInput}
                         onChange={(e) => setSkillInput(e.target.value)}
                         onKeyDown={handleSkillKeyDown}
