@@ -154,12 +154,14 @@ export function CreateJob({ job: existingJob }: CreateJobProps = {}) {
         openUntil: values.openUntil
           ? new Date(values.openUntil)
           : new Date(now.getFullYear(), now.getMonth() + 1, now.getDate()),
-        requirements: values.requirementsText ? parseLines(values.requirementsText) : undefined,
-        responsibilities: values.responsibilitiesText ? parseLines(values.responsibilitiesText) : undefined,
+        requirements: values.requirementsText ? parseLines(values.requirementsText) : [],
+        responsibilities: values.responsibilitiesText ? parseLines(values.responsibilitiesText) : [],
         applications: existingJob?.applications ?? [],
         createdAt: existingJob?.createdAt ?? now,
         updatedAt: now,
         views: existingJob?.views ?? 0,
+        activities: existingJob?.activities || [],
+        tags: existingJob?.tags || [],
       };
 
       if (!isEditing) resetForm();
