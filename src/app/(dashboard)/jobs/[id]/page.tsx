@@ -1,7 +1,7 @@
 "use client";
 
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { format, formatDistanceToNow, startOfDay } from "date-fns";
+import { format, startOfDay } from "date-fns";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
@@ -32,8 +32,9 @@ import {
 
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import type { JobApplication, PipelineStageConfig } from "@/types/job";
 import { createApplicationColumns } from "@/config/columns/application";
+import type { JobApplication, PipelineStageConfig } from "@/types/job";
+import { ACTIVITY_PRIORITIES, MEETING_TYPES } from "@/config/color";
 import { StageDialog } from "@/components/jobs/stage-dialog";
 import KanbanCard from "@/components/jobs/kanban-card";
 import { cn, formatSalary, paginate } from "@/lib";
@@ -160,27 +161,6 @@ const Page = () => {
     return { total: applications.length, pending, accepted, rejected };
   }, [applications]);
 
-  const activities = useMemo(() => {
-    const items: { id: string; type: string; message: string; date: Date }[] = [];
-    applications.forEach((app) => {
-      items.push({
-        id: `${app.id}-applied`,
-        type: "application",
-        message: `${app.applicant.name} applied for this position`,
-        date: app.createdAt,
-      });
-      if (app.status !== "pending") {
-        items.push({
-          id: `${app.id}-stage`,
-          type: "stage-change",
-          message: `${app.applicant.name} moved to "${stages.find((s) => s.id === app.status)?.title ?? app.status}"`,
-          date: app.updatedAt,
-        });
-      }
-    });
-    return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 20);
-  }, [applications, stages]);
-
   const sources = useMemo(() => {
     const sourceNames = ["LinkedIn", "Referral", "Job Board", "Company Website", "Recruiter", "Career Fair"];
     const total = applications.length;
@@ -214,12 +194,14 @@ const Page = () => {
 
   if (!job) {
     return (
-      <div className="grid min-h-64 place-items-center p-6">
-        <div className="text-center">
-          <p className="text-lg font-medium text-red-500">Job not found</p>
-          <Link href="/jobs" className="mt-2 text-sm text-gray-500 underline">
-            Back to jobs
-          </Link>
+      <div className="p-6">
+        <div className="grid min-h-150 place-items-center rounded-lg border border-dashed">
+          <div className="text-center">
+            <p className="text-lg font-medium text-red-500">Job not found</p>
+            <Link href="/jobs" className="mt-2 text-sm text-gray-500 underline">
+              Back to jobs
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -521,11 +503,17 @@ const Page = () => {
         <TabPanel selected={activeTab} value="activities">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Recent Activity</h3>
-              <p className="text-sm text-gray-500">{activities.length} events</p>
+              <h3 className="font-semibold">Activities</h3>
+              <div className="flex items-center gap-x-4">
+                <Button asChild size="sm">
+                  <Link href={`/jobs/${id}/schedules/create`}>
+                    <Plus className="size-4" /> Add Schedule
+                  </Link>
+                </Button>
+              </div>
             </div>
-            <div className="space-y-1">
-              {activities.map((activity) => {
+            <div className="space-y-4">
+              {job.activities.map((activity) => {
                 return (
                   <div
                     key={activity.id}
@@ -539,20 +527,28 @@ const Page = () => {
                       <SquareCheckBig className="size-4" />
                     </div>
                     <div className="min-w-0 flex-1 space-y-1">
-                      <p className="text-sm text-gray-700 dark:text-gray-300">{activity.message}</p>
                       <div className="flex items-center gap-x-2">
-                        <p className="text-xs text-gray-400">{format(new Date(activity.date), "MMM dd, yyyy")}</p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">{activity.title}</p>
+                        <Badge className={cn("text-xs capitalize", ACTIVITY_PRIORITIES[activity.priority])}>
+                          {activity.priority}
+                        </Badge>
+                        <Badge className={cn("text-xs capitalize", MEETING_TYPES[activity.meetingType])}>
+                          {activity.type}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-x-2">
+                        <p className="text-xs text-gray-400">{format(activity.startDate, "MMM dd, yyyy")}</p>
                         <span className="size-1 rounded-full bg-gray-400"></span>
-                        <p className="text-xs text-gray-400">
-                          {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
-                        </p>
+                        <p className="text-xs text-gray-400">{format(activity.startDate, "hh:mm a")}</p>
                       </div>
                     </div>
                   </div>
                 );
               })}
-              {activities.length === 0 && (
-                <div className="py-12 text-center text-sm text-gray-400">No activity yet</div>
+              {job.activities.length === 0 && (
+                <div className="grid min-h-100 place-items-center rounded-lg border border-dashed">
+                  <p className="text-sm text-gray-600">No activities yet</p>
+                </div>
               )}
             </div>
           </div>

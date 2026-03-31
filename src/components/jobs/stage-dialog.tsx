@@ -157,7 +157,12 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
           <div className="space-y-3">
             <div className="grid gap-1.5">
               <label className="text-sm font-medium">Status name</label>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Screening" maxLength={100} />
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Screening"
+                maxLength={100}
+              />
             </div>
             <div className="grid gap-1.5">
               <label className="text-sm font-medium">Color</label>

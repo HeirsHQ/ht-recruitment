@@ -7,7 +7,7 @@ import Link from "next/link";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DataTable, Pagination } from "@/components/shared";
-import { createWorkflowColumns } from "@/config/columns/workflow";
+import { workflowColumns } from "@/config/columns/workflow";
 import { useWorkflowStore } from "@/store/core";
 import { Button } from "@/components/ui/button";
 import { paginate } from "@/lib";
@@ -27,12 +27,10 @@ const item = {
 };
 
 const Page = () => {
-  const { workflows, deleteWorkflow, getPendingApprovalsCount } = useWorkflowStore();
+  const { workflows, getPendingApprovalsCount } = useWorkflowStore();
   const [statusFilter, setStatusFilter] = useState<WorkflowFilter>("all");
   const [pagination, setPagination] = useState(initialValues);
   const { page, pageSize } = pagination;
-
-  const columns = useMemo(() => createWorkflowColumns(deleteWorkflow), [deleteWorkflow]);
 
   const stats = useMemo(() => {
     const active = workflows.filter((w) => w.isActive).length;
@@ -149,7 +147,7 @@ const Page = () => {
             </SelectContent>
           </Select>
         </div>
-        <DataTable columns={columns} data={paginated} />
+        <DataTable columns={workflowColumns} data={paginated} />
         <Pagination
           onPageChange={(p) => setPagination({ ...pagination, page: p })}
           onPageSizeChange={(ps) => setPagination({ ...pagination, pageSize: ps })}
