@@ -57,7 +57,7 @@ const Page = () => {
             <div className="space-y-1.5 text-sm">
               <div className="flex items-center gap-x-2 text-gray-600">
                 <Mail className="size-4 shrink-0" />
-                <span>{candidate.email}</span>
+                <span>{candidate.email.toLowerCase()}</span>
               </div>
               {candidate.phone && (
                 <div className="flex items-center gap-x-2 text-gray-600">
