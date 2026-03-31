@@ -266,10 +266,8 @@ const Page = () => {
           </div>
         </div>
         {layout === "list" ? (
-          <>
-            <TabPanel selected={""} value={""}>
-              <DataTable columns={columns} data={paginated} />
-            </TabPanel>
+          <TabPanel className="space-y-4" selected={""} value={""}>
+            <DataTable columns={columns} data={paginated} />
             <Pagination
               onPageChange={(value) => handleParamsChange("page", value)}
               onPageSizeChange={(value) => handleParamsChange("page", value)}
@@ -278,7 +276,7 @@ const Page = () => {
               showPageSizeChange
               total={filtered.length}
             />
-          </>
+          </TabPanel>
         ) : (
           <JobKanban jobs={filtered} onStatusChange={handleJobStatusChange} />
         )}

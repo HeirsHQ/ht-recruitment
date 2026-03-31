@@ -1,7 +1,10 @@
 import type { Company, Department } from "./company";
 
+export type ActivityType = "scheduled" | "interview" | "task" | "follow-up" | "assessment" | "onboarding" | "other";
 export type JobStatus = "open" | "closed" | "cancelled" | "pending" | "in progress";
+export type ActivityPriority = "urgent" | "high" | "medium" | "low";
 export type JobType = "full-time" | "part-time" | "contract";
+export type MeetingType = "in-person" | "phone" | "video";
 export type WorkType = "on-site" | "hybrid" | "remote";
 export type ExperienceType =
   | "internship"
@@ -24,9 +27,11 @@ export interface Job {
   jobType: JobType;
   workType: WorkType;
   experienceType: ExperienceType;
-  responsibilities?: string[];
-  tags?: string[];
-  applications?: JobApplication[];
+  responsibilities: string[];
+  tags: string[];
+  applications: JobApplication[];
+  activities: JobActivity[];
+  requirements: string[];
   location?: string;
   remote?: boolean;
   salaryMin?: number;
@@ -35,10 +40,25 @@ export interface Job {
   role?: string;
   department?: Department;
   company?: Company;
-  requirements?: string[];
   benefits?: string[];
   closedAt?: Date;
   views?: number;
+}
+
+export interface JobActivity {
+  id: string;
+  jobId: string;
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  meetingType: MeetingType;
+  location: string;
+  meetingUrl: string;
+  priority: ActivityPriority;
+  type: ActivityType;
+  createdAt: Date;
+  description?: string;
+  updatedAt?: Date;
 }
 
 export interface JobApplication {
@@ -113,6 +133,19 @@ export interface CreateJobDto {
   companyId?: string;
   requirements?: string[];
   benefits?: string[];
+}
+
+export interface CreateActivityDto {
+  jobId: string;
+  title: string;
+  startDate: Date | undefined;
+  endDate: Date | undefined;
+  meetingType: MeetingType | (string & {});
+  location: string;
+  meetingUrl: string;
+  priority: ActivityPriority | (string & {});
+  type: ActivityType | (string & {});
+  description?: string;
 }
 
 export interface JobTemplate {

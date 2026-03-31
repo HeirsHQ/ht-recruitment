@@ -1,8 +1,7 @@
 import { faker } from "@faker-js/faker";
 
-import type { Company, Department } from "@/types/company";
-import type { Job, JobApplication, JobStatus, User, UserStatus } from "@/types";
-import type { JobTemplate, PipelineStageConfig } from "@/types/job";
+faker.seed(42);
+
 import type {
   ApprovalRequest,
   ApprovalStatus,
@@ -10,10 +9,20 @@ import type {
   CandidateCertification,
   CandidateEducation,
   CandidateExperience,
+  Company,
+  Department,
+  Job,
+  JobActivity,
+  JobApplication,
+  JobStatus,
+  JobTemplate,
+  PipelineStageConfig,
   StageHistoryEntry,
+  User,
+  UserStatus,
   WorkflowInstance,
   WorkflowTemplate,
-} from "@/types/workflow";
+} from "@/types";
 
 export const MOCK_COMPANY: Company = {
   id: "company-1",
@@ -99,6 +108,26 @@ const APPLICATION_STAGES: PipelineStageConfig[] = [
     workflow: { sendEmailTemplate: "offer-letter" },
   },
 ];
+
+function createMockActivities(jobId: string): JobActivity[] {
+  return Array.from({ length: 7 }, () => {
+    return {
+      id: faker.string.uuid(),
+      jobId,
+      title: faker.lorem.sentence(),
+      startDate: faker.date.soon(),
+      endDate: faker.date.soon(),
+      meetingType: faker.helpers.arrayElement(["video", "in-person", "phone"]),
+      location: faker.location.city(),
+      meetingUrl: faker.internet.url(),
+      priority: faker.helpers.arrayElement(["low", "medium", "high", "urgent"]),
+      type: faker.helpers.arrayElement(["scheduled", "interview", "task", "follow-up", "assessment", "onboarding"]),
+      description: faker.lorem.paragraph(),
+      createdAt: faker.date.recent(),
+      updatedAt: faker.date.recent(),
+    };
+  });
+}
 
 const SKILL_POOL = [
   "JavaScript",
@@ -251,6 +280,7 @@ export const MOCK_JOBS: Job[] = Array.from({ length: 20 }, () => {
     benefits: [faker.lorem.sentence(), faker.lorem.sentence(), faker.lorem.sentence()],
     closedAt: status === "closed" || status === "cancelled" ? faker.date.recent() : undefined,
     views: faker.number.int({ min: 0, max: 1000 }),
+    activities: createMockActivities(jobId),
   };
 });
 
