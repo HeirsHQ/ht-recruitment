@@ -2,6 +2,7 @@ import { Mulish } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
 
+import { ErrorBoundary } from "@/components/providers/error-boundary";
 import { QueryProvider } from "@/components/providers/query";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -23,10 +24,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${mulish.variable} antialiased`}>
-        <QueryProvider>
-          {children}
-          <Toaster position="top-right" />
-        </QueryProvider>
+        <ErrorBoundary>
+          <QueryProvider>
+            {children}
+            <Toaster position="top-right" />
+          </QueryProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
