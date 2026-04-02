@@ -22,9 +22,9 @@ import {
 } from "lucide-react";
 
 import { Kanban, KanbanList, TabPanel, type KanbanDragEndEvent } from "@/components/shared";
-import { WorkflowKanbanCard } from "@/components/workflows/workflow-kanban-card";
 import { ApprovalActionDialog } from "@/components/workflows/approval-action-dialog";
 import { MoveCandidateDialog } from "@/components/workflows/move-candidate-dialog";
+import { WorkflowKanbanCard } from "@/components/workflows/workflow-kanban-card";
 import { ApprovalBadge } from "@/components/workflows/approval-badge";
 import { useWorkflowStore } from "@/store/core";
 import { Button } from "@/components/ui/button";
@@ -96,7 +96,7 @@ const Page = () => {
       <div className="grid min-h-64 place-items-center p-6">
         <div className="text-center">
           <p className="text-lg font-medium text-red-500">Workflow not found</p>
-          <Link href="/workflows" className="mt-2 text-sm text-gray-500 underline">
+          <Link href="/pipelines" className="mt-2 text-sm text-gray-500 underline">
             Back to workflows
           </Link>
         </div>
@@ -180,7 +180,7 @@ const Page = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <Link href="/workflows">
+      <Link href="/pipelines">
         <Button variant="ghost" size="sm">
           <ArrowLeft className="size-4" />
           Back
@@ -203,10 +203,10 @@ const Page = () => {
           </div>
           <p className="text-sm text-gray-500">{workflow.description}</p>
         </div>
-        <Link href={`/workflows/${workflow.id}/edit`}>
+        <Link href={`/pipelines/${workflow.id}/edit`}>
           <Button variant="outline" size="sm">
             <Pencil className="size-3.5" />
-            Edit
+            Edit Pipeline
           </Button>
         </Link>
       </div>

@@ -97,10 +97,10 @@ const Page = () => {
           <h1 className="text-2xl font-semibold">Pipeline Stages</h1>
           <p className="text-sm text-gray-500">Manage hiring pipeline templates</p>
         </div>
-        <Link href="/workflows/create">
+        <Link href="/pipelines/create">
           <Button>
             <Plus className="size-4" />
-            Create Workflow
+            Create Pipeline
           </Button>
         </Link>
       </motion.div>

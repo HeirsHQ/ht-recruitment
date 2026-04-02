@@ -23,6 +23,7 @@ import type {
   WorkflowInstance,
   WorkflowTemplate,
 } from "@/types";
+import { toKebabCase } from "@/lib";
 
 export const MOCK_COMPANY: Company = {
   id: "company-1",
@@ -68,7 +69,8 @@ export const MOCK_JOB_ROLES = [
 
 const APPLICATION_STAGES: PipelineStageConfig[] = [
   {
-    id: "pending",
+    id: faker.string.uuid(),
+    slug: "pending",
     title: "Pending",
     color: "#f59e0b",
     notifications: { enabled: false, recipients: [] },
@@ -76,7 +78,8 @@ const APPLICATION_STAGES: PipelineStageConfig[] = [
     workflow: { sendEmailTemplate: "" },
   },
   {
-    id: "rejected",
+    id: faker.string.uuid(),
+    slug: "rejected",
     title: "Rejected",
     color: "#ef4444",
     notifications: { enabled: true, recipients: [] },
@@ -84,7 +87,8 @@ const APPLICATION_STAGES: PipelineStageConfig[] = [
     workflow: { sendEmailTemplate: "rejection" },
   },
   {
-    id: "interview-scheduled",
+    id: faker.string.uuid(),
+    slug: "interview-scheduled",
     title: "Interview Scheduled",
     color: "#3b82f6",
     notifications: { enabled: true, recipients: [] },
@@ -92,7 +96,8 @@ const APPLICATION_STAGES: PipelineStageConfig[] = [
     workflow: { sendEmailTemplate: "interview-scheduled" },
   },
   {
-    id: "hr-interview",
+    id: faker.string.uuid(),
+    slug: "hr-interview",
     title: "HR Interview",
     color: "#8b5cf6",
     notifications: { enabled: true, recipients: [] },
@@ -100,8 +105,9 @@ const APPLICATION_STAGES: PipelineStageConfig[] = [
     workflow: { sendEmailTemplate: "hr-interview" },
   },
   {
-    id: "accepted",
-    title: "Accepted",
+    id: faker.string.uuid(),
+    slug: "offer-letter",
+    title: "Offer Letter",
     color: "#10b981",
     notifications: { enabled: true, recipients: [] },
     approval: { required: false, approvers: [] },
@@ -609,13 +615,13 @@ export const MOCK_JOB_TEMPLATES: JobTemplate[] = Array.from({ length: 5 }, () =>
 // ---------------------------------------------------------------------------
 
 function makeStage(
-  id: string,
   title: string,
   color: string,
   opts?: { approvalRequired?: boolean; approvers?: string[]; emailTemplate?: string },
 ): PipelineStageConfig {
   return {
-    id,
+    id: faker.string.uuid(),
+    slug: toKebabCase(title),
     title,
     color,
     notifications: { enabled: true, recipients: [] },
@@ -638,20 +644,20 @@ export const MOCK_WORKFLOWS: WorkflowTemplate[] = [
     createdAt: faker.date.past(),
     updatedAt: faker.date.recent(),
     stages: [
-      makeStage("applied", "Applied", "#6b7280"),
-      makeStage("phone-screen", "Phone Screen", "#3b82f6", { emailTemplate: "interview-invite" }),
-      makeStage("technical-interview", "Technical Interview", "#8b5cf6", {
+      makeStage("Applied", "#6b7280"),
+      makeStage("Phone Screen", "#3b82f6", { emailTemplate: "interview-invite" }),
+      makeStage("Technical Interview", "#8b5cf6", {
         approvalRequired: true,
         approvers: [MOCK_USERS[1]?.email ?? "tech-lead@company.com", MOCK_USERS[2]?.email ?? "eng-mgr@company.com"],
         emailTemplate: "interview-invite",
       }),
-      makeStage("system-design", "System Design", "#ec4899", {
+      makeStage("System Design", "#ec4899", {
         approvalRequired: true,
         approvers: [MOCK_USERS[1]?.email ?? "tech-lead@company.com"],
       }),
-      makeStage("final-round", "Final Round", "#f97316", { emailTemplate: "interview-invite" }),
-      makeStage("offer", "Offer", "#10b981", { emailTemplate: "offer-letter" }),
-      makeStage("hired", "Hired", "#059669"),
+      makeStage("Final Round", "#f97316", { emailTemplate: "interview-invite" }),
+      makeStage("Offer", "#10b981", { emailTemplate: "offer-letter" }),
+      makeStage("Hired", "#059669"),
     ],
   },
   {
@@ -664,15 +670,15 @@ export const MOCK_WORKFLOWS: WorkflowTemplate[] = [
     createdAt: faker.date.past(),
     updatedAt: faker.date.recent(),
     stages: [
-      makeStage("applied", "Applied", "#6b7280"),
-      makeStage("portfolio-review", "Portfolio Review", "#8b5cf6", {
+      makeStage("Applied", "#6b7280"),
+      makeStage("Portfolio Review", "#8b5cf6", {
         approvalRequired: true,
         approvers: [MOCK_USERS[3]?.email ?? "design-lead@company.com"],
       }),
-      makeStage("design-challenge", "Design Challenge", "#3b82f6", { emailTemplate: "interview-invite" }),
-      makeStage("team-interview", "Team Interview", "#f59e0b", { emailTemplate: "interview-invite" }),
-      makeStage("offer", "Offer", "#10b981", { emailTemplate: "offer-letter" }),
-      makeStage("hired", "Hired", "#059669"),
+      makeStage("Design Challenge", "#3b82f6", { emailTemplate: "interview-invite" }),
+      makeStage("Team Interview", "#f59e0b", { emailTemplate: "interview-invite" }),
+      makeStage("Offer", "#10b981", { emailTemplate: "offer-letter" }),
+      makeStage("Hired", "#059669"),
     ],
   },
   {
@@ -685,16 +691,16 @@ export const MOCK_WORKFLOWS: WorkflowTemplate[] = [
     createdAt: faker.date.past(),
     updatedAt: faker.date.recent(),
     stages: [
-      makeStage("applied", "Applied", "#6b7280"),
-      makeStage("screening-call", "Screening Call", "#3b82f6", { emailTemplate: "interview-invite" }),
-      makeStage("sales-presentation", "Sales Presentation", "#f59e0b", {
+      makeStage("Applied", "#6b7280"),
+      makeStage("Screening Call", "#3b82f6", { emailTemplate: "interview-invite" }),
+      makeStage("Sales Presentation", "#f59e0b", {
         approvalRequired: true,
         approvers: [MOCK_USERS[4]?.email ?? "sales-mgr@company.com"],
         emailTemplate: "interview-invite",
       }),
-      makeStage("manager-interview", "Manager Interview", "#8b5cf6", { emailTemplate: "interview-invite" }),
-      makeStage("offer", "Offer", "#10b981", { emailTemplate: "offer-letter" }),
-      makeStage("hired", "Hired", "#059669"),
+      makeStage("Manager Interview", "#8b5cf6", { emailTemplate: "interview-invite" }),
+      makeStage("Offer", "#10b981", { emailTemplate: "offer-letter" }),
+      makeStage("Hired", "#059669"),
     ],
   },
   {
@@ -707,22 +713,22 @@ export const MOCK_WORKFLOWS: WorkflowTemplate[] = [
     createdAt: faker.date.past(),
     updatedAt: faker.date.recent(),
     stages: [
-      makeStage("applied", "Applied", "#6b7280"),
-      makeStage("background-check", "Background Check", "#f59e0b", {
+      makeStage("Applied", "#6b7280"),
+      makeStage("Background Check", "#f59e0b", {
         approvalRequired: true,
         approvers: [MOCK_USERS[5]?.email ?? "hr@company.com"],
       }),
-      makeStage("panel-interview", "Panel Interview", "#3b82f6", {
+      makeStage("Panel Interview", "#3b82f6", {
         approvalRequired: true,
         approvers: [MOCK_USERS[1]?.email ?? "vp@company.com", MOCK_USERS[5]?.email ?? "hr@company.com"],
         emailTemplate: "interview-invite",
       }),
-      makeStage("board-approval", "Board Approval", "#8b5cf6", {
+      makeStage("Board Approval", "#8b5cf6", {
         approvalRequired: true,
         approvers: [MOCK_USERS[0]?.email ?? "ceo@company.com"],
       }),
-      makeStage("offer", "Offer", "#10b981", { emailTemplate: "offer-letter" }),
-      makeStage("hired", "Hired", "#059669"),
+      makeStage("Offer", "#10b981", { emailTemplate: "offer-letter" }),
+      makeStage("Hired", "#059669"),
     ],
   },
   {
@@ -735,11 +741,11 @@ export const MOCK_WORKFLOWS: WorkflowTemplate[] = [
     createdAt: faker.date.past(),
     updatedAt: faker.date.recent(),
     stages: [
-      makeStage("applied", "Applied", "#6b7280"),
-      makeStage("resume-screen", "Resume Screen", "#3b82f6"),
-      makeStage("interview", "Interview", "#f59e0b", { emailTemplate: "interview-invite" }),
-      makeStage("offer", "Offer", "#10b981", { emailTemplate: "offer-letter" }),
-      makeStage("onboarding", "Onboarding", "#059669"),
+      makeStage("Applied", "#6b7280"),
+      makeStage("Resume Screen", "#3b82f6"),
+      makeStage("Interview", "#f59e0b", { emailTemplate: "interview-invite" }),
+      makeStage("Offer", "#10b981", { emailTemplate: "offer-letter" }),
+      makeStage("Onboarding", "#059669"),
     ],
   },
 ];

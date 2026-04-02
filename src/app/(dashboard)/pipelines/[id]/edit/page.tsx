@@ -21,7 +21,7 @@ const Page = () => {
       <div className="grid min-h-64 place-items-center p-6">
         <div className="text-center">
           <p className="text-lg font-medium text-red-500">Workflow not found</p>
-          <Link href="/workflows" className="mt-2 text-sm text-gray-500 underline">
+          <Link href="/pipelines" className="mt-2 text-sm text-gray-500 underline">
             Back to workflows
           </Link>
         </div>
@@ -32,12 +32,12 @@ const Page = () => {
   const handleSave = (updated: WorkflowTemplate) => {
     updateWorkflow(id, updated);
     toast.success(`Workflow "${updated.name}" updated`);
-    router.push(`/workflows/${id}`);
+    router.push(`/pipelines/${id}`);
   };
 
   return (
     <div className="space-y-6 p-6">
-      <Link href={`/workflows/${id}`}>
+      <Link href={`/pipelines/${id}`}>
         <Button variant="ghost" size="sm">
           <ArrowLeft className="size-4" />
           Back
@@ -49,7 +49,7 @@ const Page = () => {
       </div>
 
       <div className="mx-auto max-w-3xl">
-        <WorkflowForm initialData={workflow} onSave={handleSave} onCancel={() => router.push(`/workflows/${id}`)} />
+        <WorkflowForm initialData={workflow} onSave={handleSave} onCancel={() => router.push(`/pipelines/${id}`)} />
       </div>
     </div>
   );
