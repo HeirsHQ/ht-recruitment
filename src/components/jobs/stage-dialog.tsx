@@ -1,16 +1,17 @@
 "use client";
 
 import { Bell, Check, ShieldCheck, Workflow, X } from "lucide-react";
+import { faker } from "@faker-js/faker";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { PipelineStageConfig } from "@/types/job";
+import { cn, sanitizeText, isValidEmail } from "@/lib";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { cn, sanitizeText, isValidEmail } from "@/lib";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,7 @@ const EMAIL_TEMPLATES = [
 ];
 
 const EMPTY_STAGE: Omit<PipelineStageConfig, "id"> = {
+  slug: "",
   title: "",
   color: "#3b82f6",
   notifications: { enabled: false, recipients: [] },
@@ -117,7 +119,8 @@ export function StageDialog({ open, onOpenChange, onSave, initial }: StageDialog
     if (!cleanTitle) return;
 
     const stage: PipelineStageConfig = {
-      id: initial?.id ?? cleanTitle.toLowerCase().replace(/\s+/g, "-"),
+      id: faker.string.uuid(),
+      slug: initial?.slug ?? cleanTitle.toLowerCase().replace(/\s+/g, "-"),
       title: cleanTitle,
       color,
       notifications: {
