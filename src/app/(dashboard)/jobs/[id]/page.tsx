@@ -49,7 +49,7 @@ import {
   TabPanel,
 } from "@/components/shared";
 
-import { MOCK_JOBS } from "@/__mock__/database";
+import { MOCK_JOBS, MOCK_PIPELINE_STAGES } from "@/__mock__/database";
 
 const tabs = [
   { label: "Candidates", value: "candidates" },
@@ -60,49 +60,6 @@ const tabs = [
   { label: "Sources", value: "sources" },
   // { label: "Analytics", value: "analytics" },
   // { label: "Others", value: "others" },
-];
-
-const DEFAULT_STAGES: PipelineStageConfig[] = [
-  {
-    id: "pending",
-    title: "Pending",
-    color: "#f59e0b",
-    notifications: { enabled: false, recipients: [] },
-    approval: { required: false, approvers: [] },
-    workflow: { sendEmailTemplate: "" },
-  },
-  {
-    id: "rejected",
-    title: "Rejected",
-    color: "#ef4444",
-    notifications: { enabled: true, recipients: [] },
-    approval: { required: false, approvers: [] },
-    workflow: { sendEmailTemplate: "rejection" },
-  },
-  {
-    id: "interview-scheduled",
-    title: "Interview Scheduled",
-    color: "#3b82f6",
-    notifications: { enabled: true, recipients: [] },
-    approval: { required: false, approvers: [] },
-    workflow: { sendEmailTemplate: "interview-scheduled" },
-  },
-  {
-    id: "hr-interview",
-    title: "HR Interview",
-    color: "#8b5cf6",
-    notifications: { enabled: true, recipients: [] },
-    approval: { required: false, approvers: [] },
-    workflow: { sendEmailTemplate: "hr-interview" },
-  },
-  {
-    id: "accepted",
-    title: "Accepted",
-    color: "#10b981",
-    notifications: { enabled: true, recipients: [] },
-    approval: { required: false, approvers: [] },
-    workflow: { sendEmailTemplate: "offer-letter" },
-  },
 ];
 
 const views = [
@@ -146,7 +103,7 @@ const Page = () => {
 
   const [applications, setApplications] = useState<JobApplication[]>(job?.applications ?? []);
   const [editingStage, setEditingStage] = useState<PipelineStageConfig | undefined>();
-  const [stages, setStages] = useState<PipelineStageConfig[]>(DEFAULT_STAGES);
+  const [stages, setStages] = useState<PipelineStageConfig[]>(MOCK_PIPELINE_STAGES);
   const [activeTab, setActiveTab] = useState(tabs[0].value);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [view, setView] = useState("kanban");

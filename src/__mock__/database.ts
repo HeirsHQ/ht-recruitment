@@ -67,7 +67,7 @@ export const MOCK_JOB_ROLES = [
   { id: "customer-support-specialist", name: "Customer Support Specialist" },
 ];
 
-const APPLICATION_STAGES: PipelineStageConfig[] = [
+export const MOCK_PIPELINE_STAGES: PipelineStageConfig[] = [
   {
     id: faker.string.uuid(),
     slug: "pending",
@@ -209,7 +209,7 @@ const SKILL_POOL = [
 function createMockApplications(jobId: string): JobApplication[] {
   const count = faker.number.int({ min: 10, max: 20 });
   return Array.from({ length: count }, () => {
-    const stage = faker.helpers.arrayElement(APPLICATION_STAGES);
+    const stage = faker.helpers.arrayElement(MOCK_PIPELINE_STAGES);
     const skillCount = faker.number.int({ min: 2, max: 6 });
     return {
       id: faker.string.uuid(),
