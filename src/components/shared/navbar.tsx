@@ -3,12 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { useGlobalStore } from "@/store/core";
-
 export const Navbar = () => {
-  const { theme } = useGlobalStore();
-
-  const image = theme === "dark" ? "/assets/images/converge-logo.png" : "/assets/images/converge-logo-black.png";
+  const image = "/assets/images/converge-logo.png";
 
   return (
     <nav className="bg-primary-500 flex h-20 w-full items-center">

@@ -87,6 +87,7 @@ export interface JobApplicant {
 export interface PipelineStageConfig {
   id: string;
   title: string;
+  slug: string;
   color: string;
   notifications: {
     enabled: boolean;

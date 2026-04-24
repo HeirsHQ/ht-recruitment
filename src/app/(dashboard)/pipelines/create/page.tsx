@@ -17,24 +17,24 @@ const Page = () => {
   const handleSave = (workflow: WorkflowTemplate) => {
     addWorkflow(workflow);
     toast.success(`Workflow "${workflow.name}" created`);
-    router.push("/workflows");
+    router.push("/pipelines");
   };
 
   return (
     <div className="space-y-6 p-6">
-      <Link href="/workflows">
+      <Link href="/pipelines">
         <Button variant="ghost" size="sm">
           <ArrowLeft className="size-4" />
           Back
         </Button>
       </Link>
       <div>
-        <h1 className="text-2xl font-semibold">Create Workflow</h1>
+        <h1 className="text-2xl font-semibold">Create Pipeline</h1>
         <p className="text-sm text-gray-500">Define a new hiring pipeline template</p>
       </div>
 
       <div className="mx-auto max-w-3xl">
-        <WorkflowForm onSave={handleSave} onCancel={() => router.push("/workflows")} />
+        <WorkflowForm onSave={handleSave} onCancel={() => router.push("/pipelines")} />
       </div>
     </div>
   );
